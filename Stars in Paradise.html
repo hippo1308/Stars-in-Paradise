@@ -1,0 +1,899 @@
+<html>
+<head>
+<title>Voyage To The Verdant Star.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #629755; font-style: italic;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #cc7832;}
+.s4 { color: #6897bb;}
+.s5 { color: #6a8759;}
+.ln { color: #606366; font-weight: normal; font-style: normal; }
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Voyage To The Verdant Star.py</font>
+</center></td></tr></table>
+<pre><a name="l1"><span class="ln">1    </span></a><span class="s0">&quot;&quot;&quot; 
+<a name="l2"><span class="ln">2    </span></a>Tushi Thakkar 
+<a name="l3"><span class="ln">3    </span></a>ICS3U0 
+<a name="l4"><span class="ln">4    </span></a>FINAL CULMINATING 
+<a name="l5"><span class="ln">5    </span></a>2/6/25 
+<a name="l6"><span class="ln">6    </span></a>Voyage To The Verdant Star - INFINITE SCROLLING WITH COLLISION SYSTEM 
+<a name="l7"><span class="ln">7    </span></a>&quot;&quot;&quot;</span>
+<a name="l8"><span class="ln">8    </span></a><span class="s2"># importing modules needed</span>
+<a name="l9"><span class="ln">9    </span></a><span class="s3">import </span><span class="s1">sys</span><span class="s3">, </span><span class="s1">pygame</span><span class="s3">, </span><span class="s1">random</span><span class="s3">, </span><span class="s1">datetime</span>
+<a name="l10"><span class="ln">10   </span></a>
+<a name="l11"><span class="ln">11   </span></a><span class="s2"># initializing pygame in order to use its functions</span>
+<a name="l12"><span class="ln">12   </span></a><span class="s1">pygame.init()</span>
+<a name="l13"><span class="ln">13   </span></a><span class="s1">pygame.mixer.init()</span>
+<a name="l14"><span class="ln">14   </span></a>
+<a name="l15"><span class="ln">15   </span></a><span class="s2"># INFINITE SCROLLING SYSTEM</span>
+<a name="l16"><span class="ln">16   </span></a><span class="s1">cameraX = </span><span class="s4">0  </span><span class="s2"># Camera's position in the infinite world</span>
+<a name="l17"><span class="ln">17   </span></a><span class="s1">BG_WIDTH = </span><span class="s4">1200  </span><span class="s2"># Width of a single background tile</span>
+<a name="l18"><span class="ln">18   </span></a><span class="s1">BG_SPEED = </span><span class="s4">5  </span><span class="s2"># How fast in pixels, the background scrolls</span>
+<a name="l19"><span class="ln">19   </span></a>
+<a name="l20"><span class="ln">20   </span></a><span class="s2"># Character positions (relative to screen, NOT world)</span>
+<a name="l21"><span class="ln">21   </span></a><span class="s1">kaelX = </span><span class="s4">300  </span><span class="s2"># Kael stays roughly centered on screen</span>
+<a name="l22"><span class="ln">22   </span></a><span class="s1">kaelY = </span><span class="s4">500</span>
+<a name="l23"><span class="ln">23   </span></a><span class="s1">lumaX = </span><span class="s4">320  </span><span class="s2"># Luma stays roughly centered on screen</span>
+<a name="l24"><span class="ln">24   </span></a><span class="s1">lumaY = </span><span class="s4">500</span>
+<a name="l25"><span class="ln">25   </span></a>
+<a name="l26"><span class="ln">26   </span></a><span class="s2"># Scrolling boundaries - when characters hit these, trigger scrolling</span>
+<a name="l27"><span class="ln">27   </span></a><span class="s1">SCROLL_LEFT_BOUNDARY = </span><span class="s4">200</span>
+<a name="l28"><span class="ln">28   </span></a><span class="s1">SCROLL_RIGHT_BOUNDARY = </span><span class="s4">1000</span>
+<a name="l29"><span class="ln">29   </span></a>
+<a name="l30"><span class="ln">30   </span></a><span class="s2"># HEALTH SYSTEM</span>
+<a name="l31"><span class="ln">31   </span></a><span class="s1">kaelHealth = </span><span class="s4">5  </span><span class="s2"># Maximum health (5 hearts)</span>
+<a name="l32"><span class="ln">32   </span></a><span class="s1">lumaHealth = </span><span class="s4">5  </span><span class="s2"># Maximum health (5 hearts)</span>
+<a name="l33"><span class="ln">33   </span></a><span class="s1">score = </span><span class="s4">0</span>
+<a name="l34"><span class="ln">34   </span></a>
+<a name="l35"><span class="ln">35   </span></a><span class="s2"># Collision cooldown to prevent multiple hits, and health decreasing too much</span>
+<a name="l36"><span class="ln">36   </span></a><span class="s1">kaelCollisionCooldown = </span><span class="s4">0</span>
+<a name="l37"><span class="ln">37   </span></a><span class="s1">lumaCollisionCooldown = </span><span class="s4">0</span>
+<a name="l38"><span class="ln">38   </span></a><span class="s1">COLLISION_COOLDOWN_TIME = </span><span class="s4">60  </span><span class="s2"># frames (2 seconds at 30 fps)</span>
+<a name="l39"><span class="ln">39   </span></a>
+<a name="l40"><span class="ln">40   </span></a><span class="s5">&quot;&quot;&quot;The main idea of using for loops to get the animation 
+<a name="l41"><span class="ln">41   </span></a> images is iterating through the files named 'x1', 'x2', 'x3', by  
+<a name="l42"><span class="ln">42   </span></a> simply changing the number(i), each character has a movement which is 
+<a name="l43"><span class="ln">43   </span></a> labeled and numbered in the order, so when iterated back to back, 
+<a name="l44"><span class="ln">44   </span></a> they perform an animation. This logic is used for Luma and Kael, along with 
+<a name="l45"><span class="ln">45   </span></a> the left movements, where the images are flipped horizontally before  
+<a name="l46"><span class="ln">46   </span></a> loading&quot;&quot;&quot;</span>
+<a name="l47"><span class="ln">47   </span></a>
+<a name="l48"><span class="ln">48   </span></a><span class="s2"># Animation loading</span>
+<a name="l49"><span class="ln">49   </span></a><span class="s1">kaelIdle = []</span>
+<a name="l50"><span class="ln">50   </span></a><span class="s3">for </span><span class="s1">i </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">7</span><span class="s1">):</span>
+<a name="l51"><span class="ln">51   </span></a>    <span class="s1">imgIdleK = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/kael/idle</span><span class="s3">{</span><span class="s1">i</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">150</span><span class="s3">, </span><span class="s4">150</span><span class="s1">))</span>
+<a name="l52"><span class="ln">52   </span></a>    <span class="s1">kaelIdle.append(imgIdleK)</span>
+<a name="l53"><span class="ln">53   </span></a>
+<a name="l54"><span class="ln">54   </span></a><span class="s1">kaelRun = []</span>
+<a name="l55"><span class="ln">55   </span></a><span class="s3">for </span><span class="s1">x </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">9</span><span class="s1">):</span>
+<a name="l56"><span class="ln">56   </span></a>    <span class="s1">imgRunK = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/kael/run</span><span class="s3">{</span><span class="s1">x</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">150</span><span class="s3">, </span><span class="s4">150</span><span class="s1">))</span>
+<a name="l57"><span class="ln">57   </span></a>    <span class="s1">kaelRun.append(imgRunK)</span>
+<a name="l58"><span class="ln">58   </span></a>
+<a name="l59"><span class="ln">59   </span></a><span class="s1">kaelJump = []</span>
+<a name="l60"><span class="ln">60   </span></a><span class="s3">for </span><span class="s1">j </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">9</span><span class="s1">):</span>
+<a name="l61"><span class="ln">61   </span></a>    <span class="s1">imgJumpK = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/kael/jump</span><span class="s3">{</span><span class="s1">j</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">150</span><span class="s3">, </span><span class="s4">150</span><span class="s1">))</span>
+<a name="l62"><span class="ln">62   </span></a>    <span class="s1">kaelJump.append(imgJumpK)</span>
+<a name="l63"><span class="ln">63   </span></a>
+<a name="l64"><span class="ln">64   </span></a><span class="s1">kaelHit = []</span>
+<a name="l65"><span class="ln">65   </span></a><span class="s3">for </span><span class="s1">h </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">5</span><span class="s1">):</span>
+<a name="l66"><span class="ln">66   </span></a>    <span class="s1">imgHitK = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/kael/hit</span><span class="s3">{</span><span class="s1">h</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">150</span><span class="s3">, </span><span class="s4">150</span><span class="s1">))</span>
+<a name="l67"><span class="ln">67   </span></a>    <span class="s1">kaelHit.append(imgHitK)</span>
+<a name="l68"><span class="ln">68   </span></a>
+<a name="l69"><span class="ln">69   </span></a><span class="s1">lumaIdle = []</span>
+<a name="l70"><span class="ln">70   </span></a><span class="s3">for </span><span class="s1">X </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">7</span><span class="s1">):</span>
+<a name="l71"><span class="ln">71   </span></a>    <span class="s1">imgIdleL = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/luma2/idle</span><span class="s3">{</span><span class="s1">X</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">150</span><span class="s3">, </span><span class="s4">150</span><span class="s1">))</span>
+<a name="l72"><span class="ln">72   </span></a>    <span class="s1">lumaIdle.append(imgIdleL)</span>
+<a name="l73"><span class="ln">73   </span></a>
+<a name="l74"><span class="ln">74   </span></a><span class="s1">lumaRun = []</span>
+<a name="l75"><span class="ln">75   </span></a><span class="s3">for </span><span class="s1">R </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">7</span><span class="s1">):</span>
+<a name="l76"><span class="ln">76   </span></a>    <span class="s1">imgRunL = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/luma2/run</span><span class="s3">{</span><span class="s1">R</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">150</span><span class="s3">, </span><span class="s4">150</span><span class="s1">))</span>
+<a name="l77"><span class="ln">77   </span></a>    <span class="s1">lumaRun.append(imgRunL)</span>
+<a name="l78"><span class="ln">78   </span></a>
+<a name="l79"><span class="ln">79   </span></a><span class="s1">lumaJump = []</span>
+<a name="l80"><span class="ln">80   </span></a><span class="s3">for </span><span class="s1">J </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">10</span><span class="s1">):</span>
+<a name="l81"><span class="ln">81   </span></a>    <span class="s1">imgJumpL = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/luma/jump</span><span class="s3">{</span><span class="s1">J</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">150</span><span class="s3">, </span><span class="s4">150</span><span class="s1">))</span>
+<a name="l82"><span class="ln">82   </span></a>    <span class="s1">lumaJump.append(imgJumpL)</span>
+<a name="l83"><span class="ln">83   </span></a>
+<a name="l84"><span class="ln">84   </span></a><span class="s1">enemy1 = []</span>
+<a name="l85"><span class="ln">85   </span></a><span class="s3">for </span><span class="s1">w </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">3</span><span class="s1">):</span>
+<a name="l86"><span class="ln">86   </span></a>    <span class="s1">imgEnemy1 = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'enemies/enemy</span><span class="s3">{</span><span class="s1">w</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">70</span><span class="s3">, </span><span class="s4">80</span><span class="s1">))</span>
+<a name="l87"><span class="ln">87   </span></a>    <span class="s1">enemy1.append(imgEnemy1)</span>
+<a name="l88"><span class="ln">88   </span></a>
+<a name="l89"><span class="ln">89   </span></a><span class="s1">enemy2 = []</span>
+<a name="l90"><span class="ln">90   </span></a><span class="s3">for </span><span class="s1">t </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">3</span><span class="s3">, </span><span class="s4">5</span><span class="s1">):</span>
+<a name="l91"><span class="ln">91   </span></a>    <span class="s1">imgEnemy2 = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'enemies/enemy</span><span class="s3">{</span><span class="s1">t</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">70</span><span class="s3">, </span><span class="s4">80</span><span class="s1">))</span>
+<a name="l92"><span class="ln">92   </span></a>    <span class="s1">enemy2.append(imgEnemy2)</span>
+<a name="l93"><span class="ln">93   </span></a>
+<a name="l94"><span class="ln">94   </span></a><span class="s1">enemy3 = []</span>
+<a name="l95"><span class="ln">95   </span></a><span class="s3">for </span><span class="s1">p </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">5</span><span class="s3">, </span><span class="s4">7</span><span class="s1">):</span>
+<a name="l96"><span class="ln">96   </span></a>    <span class="s1">imgEnemy3 = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'enemies/enemy</span><span class="s3">{</span><span class="s1">p</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">70</span><span class="s3">, </span><span class="s4">80</span><span class="s1">))</span>
+<a name="l97"><span class="ln">97   </span></a>    <span class="s1">enemy3.append(imgEnemy3)</span>
+<a name="l98"><span class="ln">98   </span></a>
+<a name="l99"><span class="ln">99   </span></a><span class="s1">kaelHeart = []</span>
+<a name="l100"><span class="ln">100  </span></a><span class="s3">for </span><span class="s1">o </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">5</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s1">):</span>
+<a name="l101"><span class="ln">101  </span></a>    <span class="s1">kaelHeartImg = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/hearts/tile00</span><span class="s3">{</span><span class="s1">o</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">50</span><span class="s3">, </span><span class="s4">80</span><span class="s1">))</span>
+<a name="l102"><span class="ln">102  </span></a>    <span class="s1">kaelHeart.append(kaelHeartImg)</span>
+<a name="l103"><span class="ln">103  </span></a>
+<a name="l104"><span class="ln">104  </span></a><span class="s1">lumaHeart = []</span>
+<a name="l105"><span class="ln">105  </span></a><span class="s3">for </span><span class="s1">y </span><span class="s3">in </span><span class="s1">range(</span><span class="s4">5</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s3">, </span><span class="s1">-</span><span class="s4">1</span><span class="s1">):</span>
+<a name="l106"><span class="ln">106  </span></a>    <span class="s1">lumaHeartLuma = pygame.transform.scale(pygame.image.load(</span><span class="s5">f'icons,sprites/hearts/tile00</span><span class="s3">{</span><span class="s1">y</span><span class="s3">}</span><span class="s5">.png'</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(</span><span class="s4">50</span><span class="s3">, </span><span class="s4">80</span><span class="s1">))</span>
+<a name="l107"><span class="ln">107  </span></a>    <span class="s1">lumaHeart.append(lumaHeartLuma)</span>
+<a name="l108"><span class="ln">108  </span></a>
+<a name="l109"><span class="ln">109  </span></a><span class="s2"># Screen setup</span>
+<a name="l110"><span class="ln">110  </span></a><span class="s1">WIDTH = </span><span class="s4">1200</span>
+<a name="l111"><span class="ln">111  </span></a><span class="s1">HEIGHT = </span><span class="s4">750</span>
+<a name="l112"><span class="ln">112  </span></a><span class="s1">screen = pygame.display.set_mode((WIDTH</span><span class="s3">, </span><span class="s1">HEIGHT))</span>
+<a name="l113"><span class="ln">113  </span></a>
+<a name="l114"><span class="ln">114  </span></a><span class="s2"># changing the window name</span>
+<a name="l115"><span class="ln">115  </span></a><span class="s1">pygame.display.set_caption(</span><span class="s5">&quot;Voyage To The Verdant Star&quot;</span><span class="s1">)</span>
+<a name="l116"><span class="ln">116  </span></a>
+<a name="l117"><span class="ln">117  </span></a><span class="s2"># Background image setup for infinite scrolling</span>
+<a name="l118"><span class="ln">118  </span></a><span class="s1">bg = pygame.image.load(</span><span class="s5">'main.png'</span><span class="s1">)</span>
+<a name="l119"><span class="ln">119  </span></a><span class="s1">bg1 = pygame.image.load(</span><span class="s5">'bgs/bg3.png'</span><span class="s1">)</span>
+<a name="l120"><span class="ln">120  </span></a>
+<a name="l121"><span class="ln">121  </span></a><span class="s2"># transforming each to the screen's W, H</span>
+<a name="l122"><span class="ln">122  </span></a><span class="s1">bg = pygame.transform.scale(bg</span><span class="s3">, </span><span class="s1">(WIDTH</span><span class="s3">, </span><span class="s1">HEIGHT))</span>
+<a name="l123"><span class="ln">123  </span></a><span class="s1">bg1 = pygame.transform.scale(bg1</span><span class="s3">, </span><span class="s1">(BG_WIDTH</span><span class="s3">, </span><span class="s1">HEIGHT))</span>
+<a name="l124"><span class="ln">124  </span></a>
+<a name="l125"><span class="ln">125  </span></a><span class="s2"># UI element display</span>
+<a name="l126"><span class="ln">126  </span></a><span class="s1">control = pygame.image.load(</span><span class="s5">'controls.png'</span><span class="s1">)</span>
+<a name="l127"><span class="ln">127  </span></a><span class="s1">control = pygame.transform.scale(control</span><span class="s3">, </span><span class="s1">(WIDTH</span><span class="s3">, </span><span class="s1">HEIGHT))</span>
+<a name="l128"><span class="ln">128  </span></a>
+<a name="l129"><span class="ln">129  </span></a><span class="s2"># initial game state when starting</span>
+<a name="l130"><span class="ln">130  </span></a><span class="s1">gameState = </span><span class="s5">&quot;home&quot;</span>
+<a name="l131"><span class="ln">131  </span></a>
+<a name="l132"><span class="ln">132  </span></a><span class="s2"># image set up for game state changing variables - the play and next buttons</span>
+<a name="l133"><span class="ln">133  </span></a><span class="s2"># PLAY BUTTON</span>
+<a name="l134"><span class="ln">134  </span></a><span class="s1">playBtn = pygame.image.load(</span><span class="s5">'icons,sprites/playBtn.png'</span><span class="s1">)</span>
+<a name="l135"><span class="ln">135  </span></a><span class="s1">playBtn = pygame.transform.scale(playBtn</span><span class="s3">, </span><span class="s1">(</span><span class="s4">200</span><span class="s3">, </span><span class="s4">100</span><span class="s1">))</span>
+<a name="l136"><span class="ln">136  </span></a><span class="s1">playBtnRect = playBtn.get_rect(topleft=(</span><span class="s4">800</span><span class="s3">, </span><span class="s4">600</span><span class="s1">))</span>
+<a name="l137"><span class="ln">137  </span></a>
+<a name="l138"><span class="ln">138  </span></a><span class="s2"># NEXT BUTTON</span>
+<a name="l139"><span class="ln">139  </span></a><span class="s1">nextBtn = pygame.image.load(</span><span class="s5">'icons,sprites/nextBtn.png'</span><span class="s1">)</span>
+<a name="l140"><span class="ln">140  </span></a><span class="s1">nextBtn = pygame.transform.scale(nextBtn</span><span class="s3">, </span><span class="s1">(</span><span class="s4">250</span><span class="s3">, </span><span class="s4">150</span><span class="s1">))</span>
+<a name="l141"><span class="ln">141  </span></a><span class="s1">nextBtnRect = nextBtn.get_rect(topleft=(</span><span class="s4">500</span><span class="s3">, </span><span class="s4">600</span><span class="s1">))</span>
+<a name="l142"><span class="ln">142  </span></a>
+<a name="l143"><span class="ln">143  </span></a><span class="s2"># loading the star image</span>
+<a name="l144"><span class="ln">144  </span></a><span class="s1">star = pygame.image.load(</span><span class="s5">'icons,sprites/star.png'</span><span class="s1">)</span>
+<a name="l145"><span class="ln">145  </span></a><span class="s1">star = pygame.transform.scale(star</span><span class="s3">, </span><span class="s1">(</span><span class="s4">40</span><span class="s3">, </span><span class="s4">40</span><span class="s1">))</span>
+<a name="l146"><span class="ln">146  </span></a>
+<a name="l147"><span class="ln">147  </span></a><span class="s2"># Sound</span>
+<a name="l148"><span class="ln">148  </span></a><span class="s1">ripMomSound = pygame.mixer.music.load(</span><span class="s5">'sound/Mommy.mp3'</span><span class="s1">)</span>
+<a name="l149"><span class="ln">149  </span></a><span class="s5">&quot;&quot;&quot;the mixer module basically controls the background music,  
+<a name="l150"><span class="ln">150  </span></a>by loading the mp3and then playing at a speed,/volume (functions) &quot;&quot;&quot;</span>
+<a name="l151"><span class="ln">151  </span></a>
+<a name="l152"><span class="ln">152  </span></a><span class="s2"># flag to track the music, so it doesn't restart or</span>
+<a name="l153"><span class="ln">153  </span></a><span class="s2"># keep playing when program is closed</span>
+<a name="l154"><span class="ln">154  </span></a><span class="s1">musicStarted = </span><span class="s3">False</span>
+<a name="l155"><span class="ln">155  </span></a>
+<a name="l156"><span class="ln">156  </span></a><span class="s2"># setting pace</span>
+<a name="l157"><span class="ln">157  </span></a><span class="s1">clock = pygame.time.Clock()</span>
+<a name="l158"><span class="ln">158  </span></a>
+<a name="l159"><span class="ln">159  </span></a><span class="s2"># Movement flags</span>
+<a name="l160"><span class="ln">160  </span></a><span class="s2"># KAEL</span>
+<a name="l161"><span class="ln">161  </span></a><span class="s1">moveRight = </span><span class="s3">False</span>
+<a name="l162"><span class="ln">162  </span></a><span class="s1">moveLeft = </span><span class="s3">False</span>
+<a name="l163"><span class="ln">163  </span></a><span class="s1">jump = </span><span class="s3">False</span>
+<a name="l164"><span class="ln">164  </span></a><span class="s1">hit = </span><span class="s3">False</span>
+<a name="l165"><span class="ln">165  </span></a>
+<a name="l166"><span class="ln">166  </span></a><span class="s2"># LUMA</span>
+<a name="l167"><span class="ln">167  </span></a><span class="s1">moveRightL = </span><span class="s3">False</span>
+<a name="l168"><span class="ln">168  </span></a><span class="s1">moveLeftL = </span><span class="s3">False</span>
+<a name="l169"><span class="ln">169  </span></a><span class="s1">jumpL = </span><span class="s3">False</span>
+<a name="l170"><span class="ln">170  </span></a>
+<a name="l171"><span class="ln">171  </span></a><span class="s2"># Animation tracking</span>
+<a name="l172"><span class="ln">172  </span></a><span class="s2"># knowing the ONGOING frame of the character being displayed</span>
+<a name="l173"><span class="ln">173  </span></a><span class="s1">currentFrameKael = </span><span class="s4">0</span>
+<a name="l174"><span class="ln">174  </span></a><span class="s1">currentFrameLuma = </span><span class="s4">0</span>
+<a name="l175"><span class="ln">175  </span></a><span class="s1">currentFrameEnemy1 = </span><span class="s4">0</span>
+<a name="l176"><span class="ln">176  </span></a><span class="s1">currentFrameEnemy2 = </span><span class="s4">0</span>
+<a name="l177"><span class="ln">177  </span></a><span class="s1">currentFrameEnemy3 = </span><span class="s4">0</span>
+<a name="l178"><span class="ln">178  </span></a>
+<a name="l179"><span class="ln">179  </span></a><span class="s2"># how fast to iterate through the lists of images for animation</span>
+<a name="l180"><span class="ln">180  </span></a><span class="s1">frameSpeed = </span><span class="s4">0.25</span>
+<a name="l181"><span class="ln">181  </span></a>
+<a name="l182"><span class="ln">182  </span></a><span class="s2"># Separate velocity variables for each character for jumping</span>
+<a name="l183"><span class="ln">183  </span></a><span class="s1">velocityKael = -</span><span class="s4">15</span>
+<a name="l184"><span class="ln">184  </span></a><span class="s1">velocityLuma = -</span><span class="s4">15</span>
+<a name="l185"><span class="ln">185  </span></a>
+<a name="l186"><span class="ln">186  </span></a><span class="s2"># INFINITE SCROLLING VARIABLES</span>
+<a name="l187"><span class="ln">187  </span></a><span class="s1">bgOffset = </span><span class="s4">0  </span><span class="s2"># Background scroll offset -</span>
+<a name="l188"><span class="ln">188  </span></a><span class="s5">&quot;&quot;&quot; the amount of pixels the bg moves, away from camera  
+<a name="l189"><span class="ln">189  </span></a>from starting position (therefore, starts with 0)&quot;&quot;&quot;</span>
+<a name="l190"><span class="ln">190  </span></a><span class="s1">worldDistance = </span><span class="s4">0  </span><span class="s2"># How far we've traveled in the world</span>
+<a name="l191"><span class="ln">191  </span></a>
+<a name="l192"><span class="ln">192  </span></a><span class="s2"># OBSTACLE SYSTEM FOR INFINITE SCROLLING</span>
+<a name="l193"><span class="ln">193  </span></a><span class="s1">obstacles = []</span>
+<a name="l194"><span class="ln">194  </span></a><span class="s1">nextObstacleDistance = </span><span class="s4">500  </span><span class="s2"># Distance to next obstacle spawn</span>
+<a name="l195"><span class="ln">195  </span></a>
+<a name="l196"><span class="ln">196  </span></a><span class="s2"># Enemy animation tracking</span>
+<a name="l197"><span class="ln">197  </span></a><span class="s1">enemyAnimationSpeed = </span><span class="s4">0.1  </span><span class="s2"># Slower animation for enemies</span>
+<a name="l198"><span class="ln">198  </span></a>
+<a name="l199"><span class="ln">199  </span></a><span class="s2">#score list</span>
+<a name="l200"><span class="ln">200  </span></a><span class="s1">scores = []</span>
+<a name="l201"><span class="ln">201  </span></a>
+<a name="l202"><span class="ln">202  </span></a><span class="s2">#score flag</span>
+<a name="l203"><span class="ln">203  </span></a><span class="s1">scoreWritten = </span><span class="s3">False</span>
+<a name="l204"><span class="ln">204  </span></a>
+<a name="l205"><span class="ln">205  </span></a><span class="s3">def </span><span class="s1">checkCollision(rect1</span><span class="s3">, </span><span class="s1">rect2):</span>
+<a name="l206"><span class="ln">206  </span></a>    <span class="s2">#Check if two rectangles collide</span>
+<a name="l207"><span class="ln">207  </span></a>    <span class="s3">return </span><span class="s1">rect1.colliderect(rect2)</span>
+<a name="l208"><span class="ln">208  </span></a>
+<a name="l209"><span class="ln">209  </span></a><span class="s3">def </span><span class="s1">getCharacterRect(x</span><span class="s3">, </span><span class="s1">y</span><span class="s3">, </span><span class="s1">width=</span><span class="s4">50</span><span class="s3">, </span><span class="s1">height=</span><span class="s4">50</span><span class="s1">):</span>
+<a name="l210"><span class="ln">210  </span></a>    <span class="s2">#Get character collision rectangle - made smaller and more centered</span>
+<a name="l211"><span class="ln">211  </span></a>    <span class="s2"># Offset the rectangle to center it better on the character sprite</span>
+<a name="l212"><span class="ln">212  </span></a>    <span class="s1">offset_x = </span><span class="s4">20  </span><span class="s2"># Move rectangle slightly right to center on character</span>
+<a name="l213"><span class="ln">213  </span></a>    <span class="s1">offset_y = </span><span class="s4">70  </span><span class="s2"># Move rectangle slightly down to center on character</span>
+<a name="l214"><span class="ln">214  </span></a>    <span class="s3">return </span><span class="s1">pygame.Rect(x + offset_x</span><span class="s3">, </span><span class="s1">y + offset_y</span><span class="s3">, </span><span class="s1">width</span><span class="s3">, </span><span class="s1">height)</span>
+<a name="l215"><span class="ln">215  </span></a>
+<a name="l216"><span class="ln">216  </span></a><span class="s3">def </span><span class="s1">getEnemyRect(obstacle):</span>
+<a name="l217"><span class="ln">217  </span></a>    <span class="s2">#Get enemy collision rectangle - made smaller and more centered for</span>
+<a name="l218"><span class="ln">218  </span></a>    <span class="s2"># better collision detection&quot;&quot;&quot;</span>
+<a name="l219"><span class="ln">219  </span></a>
+<a name="l220"><span class="ln">220  </span></a>    <span class="s1">new_width = </span><span class="s4">40</span><span class="s2"># 70-30</span>
+<a name="l221"><span class="ln">221  </span></a>    <span class="s1">new_height = </span><span class="s4">50</span><span class="s2"># 80-30</span>
+<a name="l222"><span class="ln">222  </span></a>
+<a name="l223"><span class="ln">223  </span></a>    <span class="s2"># Center the smaller collision box on the enemy sprites</span>
+<a name="l224"><span class="ln">224  </span></a>    <span class="s1">offset_x = </span><span class="s4">15</span><span class="s2"># new_width // 2</span>
+<a name="l225"><span class="ln">225  </span></a>    <span class="s1">offset_y = </span><span class="s4">15</span><span class="s2"># new_height // 2</span>
+<a name="l226"><span class="ln">226  </span></a>
+<a name="l227"><span class="ln">227  </span></a>    <span class="s3">return </span><span class="s1">pygame.Rect(</span>
+<a name="l228"><span class="ln">228  </span></a>        <span class="s1">obstacle[</span><span class="s5">'x'</span><span class="s1">] + offset_x</span><span class="s3">,</span>
+<a name="l229"><span class="ln">229  </span></a>        <span class="s1">obstacle[</span><span class="s5">'y'</span><span class="s1">] + offset_y</span><span class="s3">,</span>
+<a name="l230"><span class="ln">230  </span></a>        <span class="s1">new_width</span><span class="s3">,</span>
+<a name="l231"><span class="ln">231  </span></a>        <span class="s1">new_height</span>
+<a name="l232"><span class="ln">232  </span></a>    <span class="s1">)</span>
+<a name="l233"><span class="ln">233  </span></a>
+<a name="l234"><span class="ln">234  </span></a><span class="s3">def </span><span class="s1">takeDamage(character):</span>
+<a name="l235"><span class="ln">235  </span></a>    <span class="s2">#Handle character taking damage</span>
+<a name="l236"><span class="ln">236  </span></a>    <span class="s3">global </span><span class="s1">kaelHealth</span><span class="s3">, </span><span class="s1">lumaHealth</span><span class="s3">, </span><span class="s1">kaelCollisionCooldown</span><span class="s3">, </span><span class="s1">lumaCollisionCooldown</span>
+<a name="l237"><span class="ln">237  </span></a>
+<a name="l238"><span class="ln">238  </span></a>    <span class="s3">if </span><span class="s1">character == </span><span class="s5">&quot;kael&quot; </span><span class="s3">and </span><span class="s1">kaelCollisionCooldown &lt;= </span><span class="s4">0</span><span class="s1">:</span>
+<a name="l239"><span class="ln">239  </span></a>        <span class="s1">kaelHealth = max(</span><span class="s4">0</span><span class="s3">, </span><span class="s1">kaelHealth - </span><span class="s4">1</span><span class="s1">)</span>
+<a name="l240"><span class="ln">240  </span></a>        <span class="s1">kaelCollisionCooldown = COLLISION_COOLDOWN_TIME</span>
+<a name="l241"><span class="ln">241  </span></a>
+<a name="l242"><span class="ln">242  </span></a>    <span class="s3">elif </span><span class="s1">character == </span><span class="s5">&quot;luma&quot; </span><span class="s3">and </span><span class="s1">lumaCollisionCooldown &lt;= </span><span class="s4">0</span><span class="s1">:</span>
+<a name="l243"><span class="ln">243  </span></a>        <span class="s1">lumaHealth = max(</span><span class="s4">0</span><span class="s3">, </span><span class="s1">lumaHealth - </span><span class="s4">1</span><span class="s1">)</span>
+<a name="l244"><span class="ln">244  </span></a>        <span class="s1">lumaCollisionCooldown = COLLISION_COOLDOWN_TIME</span>
+<a name="l245"><span class="ln">245  </span></a>        <span class="s5">&quot;&quot;&quot;we use the max() function here instead of -= because this would trigger game over. so once the  
+<a name="l246"><span class="ln">246  </span></a>         character health is -ve, it automatically sets to 0. Also we use the cool down to basically  
+<a name="l247"><span class="ln">247  </span></a>         stop the health from decreasing every frame the enemy is colliding with the characters&quot;&quot;&quot;</span>
+<a name="l248"><span class="ln">248  </span></a>
+<a name="l249"><span class="ln">249  </span></a><span class="s3">def </span><span class="s1">hitEnemy(obstacle):</span>
+<a name="l250"><span class="ln">250  </span></a>    <span class="s2">#Handle hitting an enemy - convert to star and increase score</span>
+<a name="l251"><span class="ln">251  </span></a>    <span class="s3">global </span><span class="s1">score</span>
+<a name="l252"><span class="ln">252  </span></a>    <span class="s1">obstacle[</span><span class="s5">'isHit'</span><span class="s1">] = </span><span class="s3">True</span>
+<a name="l253"><span class="ln">253  </span></a>    <span class="s1">obstacle[</span><span class="s5">'hitTime'</span><span class="s1">] = pygame.time.get_ticks()</span>
+<a name="l254"><span class="ln">254  </span></a>    <span class="s1">score += </span><span class="s4">1</span>
+<a name="l255"><span class="ln">255  </span></a>    <span class="s5">&quot;&quot;&quot;the get_ticks() is used to store the TIME Kael hits the enemy, which gets put into the dictionary 
+<a name="l256"><span class="ln">256  </span></a>    so we know the exact point for the enemy to turn into a star&quot;&quot;&quot;</span>
+<a name="l257"><span class="ln">257  </span></a>
+<a name="l258"><span class="ln">258  </span></a><span class="s3">def </span><span class="s1">drawHearts():</span>
+<a name="l259"><span class="ln">259  </span></a>    <span class="s2">#Draw single heart for each character that changes frame based on health</span>
+<a name="l260"><span class="ln">260  </span></a>    <span class="s2"># Draw Kael's heart (top left) - heart frame based on remaining health</span>
+<a name="l261"><span class="ln">261  </span></a>    <span class="s2"># Frame 0 = full health (5), Frame 5 = no health (0)</span>
+<a name="l262"><span class="ln">262  </span></a>    <span class="s2"># basically the reverse of takeDamage()</span>
+<a name="l263"><span class="ln">263  </span></a>    <span class="s1">kael_heart_frame = max(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">5 </span><span class="s1">- kaelHealth)  </span><span class="s2"># 5-5=0 (full), 5-0=5 (empty)</span>
+<a name="l264"><span class="ln">264  </span></a>    <span class="s1">screen.blit(kaelHeart[kael_heart_frame]</span><span class="s3">, </span><span class="s1">(</span><span class="s4">10</span><span class="s3">, </span><span class="s4">50</span><span class="s1">))</span>
+<a name="l265"><span class="ln">265  </span></a>
+<a name="l266"><span class="ln">266  </span></a>    <span class="s2"># Draw Luma's heart (below Kael's)</span>
+<a name="l267"><span class="ln">267  </span></a>    <span class="s1">luma_heart_frame = max(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">5 </span><span class="s1">- lumaHealth)</span>
+<a name="l268"><span class="ln">268  </span></a>    <span class="s1">screen.blit(lumaHeart[luma_heart_frame]</span><span class="s3">, </span><span class="s1">(</span><span class="s4">10</span><span class="s3">, </span><span class="s4">120</span><span class="s1">))</span>
+<a name="l269"><span class="ln">269  </span></a>
+<a name="l270"><span class="ln">270  </span></a><span class="s3">def </span><span class="s1">drawUI():</span>
+<a name="l271"><span class="ln">271  </span></a>    <span class="s2">#Draw all UI elements</span>
+<a name="l272"><span class="ln">272  </span></a>    <span class="s2"># Draw hearts</span>
+<a name="l273"><span class="ln">273  </span></a>    <span class="s1">drawHearts()</span>
+<a name="l274"><span class="ln">274  </span></a>
+<a name="l275"><span class="ln">275  </span></a>    <span class="s2"># Draw distance and score</span>
+<a name="l276"><span class="ln">276  </span></a>    <span class="s1">font = pygame.font.Font(</span><span class="s5">&quot;icons,sprites/m6x11.ttf&quot;</span><span class="s3">, </span><span class="s4">36</span><span class="s1">)</span>
+<a name="l277"><span class="ln">277  </span></a>    <span class="s1">distance_text = font.render(</span><span class="s5">f&quot;Distance: </span><span class="s3">{</span><span class="s1">int(worldDistance)</span><span class="s3">}</span><span class="s5">&quot;</span><span class="s3">, True, </span><span class="s1">(</span><span class="s4">65</span><span class="s3">, </span><span class="s4">67</span><span class="s3">, </span><span class="s4">65</span><span class="s1">))</span>
+<a name="l278"><span class="ln">278  </span></a>    <span class="s1">score_text = font.render(</span><span class="s5">f&quot;* Score *: </span><span class="s3">{</span><span class="s1">score</span><span class="s3">}</span><span class="s5">&quot;</span><span class="s3">, True, </span><span class="s1">(</span><span class="s4">242</span><span class="s3">, </span><span class="s4">52</span><span class="s3">, </span><span class="s4">215</span><span class="s1">))</span>
+<a name="l279"><span class="ln">279  </span></a>
+<a name="l280"><span class="ln">280  </span></a>    <span class="s1">screen.blit(distance_text</span><span class="s3">, </span><span class="s1">(</span><span class="s4">950</span><span class="s3">, </span><span class="s4">30</span><span class="s1">))</span>
+<a name="l281"><span class="ln">281  </span></a>    <span class="s1">screen.blit(score_text</span><span class="s3">, </span><span class="s1">(</span><span class="s4">950</span><span class="s3">, </span><span class="s4">70</span><span class="s1">))</span>
+<a name="l282"><span class="ln">282  </span></a>
+<a name="l283"><span class="ln">283  </span></a>    <span class="s2"># Draw character names next to hearts, with a downloaded font and Font()</span>
+<a name="l284"><span class="ln">284  </span></a>    <span class="s1">name_font = pygame.font.Font(</span><span class="s5">&quot;icons,sprites/m6x11.ttf&quot;</span><span class="s3">, </span><span class="s4">34</span><span class="s1">)</span>
+<a name="l285"><span class="ln">285  </span></a>    <span class="s1">kael_name = name_font.render(</span><span class="s5">&quot;Kael&quot;</span><span class="s3">, True, </span><span class="s1">(</span><span class="s4">243</span><span class="s3">, </span><span class="s4">129</span><span class="s3">, </span><span class="s4">5</span><span class="s1">))</span>
+<a name="l286"><span class="ln">286  </span></a>    <span class="s1">luma_name = name_font.render(</span><span class="s5">&quot;Luma&quot;</span><span class="s3">, True, </span><span class="s1">(</span><span class="s4">85</span><span class="s3">, </span><span class="s4">7</span><span class="s3">, </span><span class="s4">139</span><span class="s1">))</span>
+<a name="l287"><span class="ln">287  </span></a>
+<a name="l288"><span class="ln">288  </span></a>    <span class="s1">screen.blit(kael_name</span><span class="s3">, </span><span class="s1">(</span><span class="s4">70</span><span class="s3">, </span><span class="s4">75</span><span class="s1">))</span>
+<a name="l289"><span class="ln">289  </span></a>    <span class="s1">screen.blit(luma_name</span><span class="s3">, </span><span class="s1">(</span><span class="s4">70</span><span class="s3">, </span><span class="s4">145</span><span class="s1">))</span>
+<a name="l290"><span class="ln">290  </span></a>
+<a name="l291"><span class="ln">291  </span></a><span class="s3">def </span><span class="s1">checkGameOver():</span>
+<a name="l292"><span class="ln">292  </span></a>    <span class="s2">#Check if game should end, just a flag function</span>
+<a name="l293"><span class="ln">293  </span></a>    <span class="s3">if </span><span class="s1">kaelHealth &lt;= </span><span class="s4">0 </span><span class="s3">or </span><span class="s1">lumaHealth &lt;= </span><span class="s4">0</span><span class="s1">:</span>
+<a name="l294"><span class="ln">294  </span></a>        <span class="s3">return True</span>
+<a name="l295"><span class="ln">295  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l296"><span class="ln">296  </span></a>        <span class="s3">return False</span>
+<a name="l297"><span class="ln">297  </span></a>
+<a name="l298"><span class="ln">298  </span></a><span class="s3">def </span><span class="s1">spawnObstacle():</span>
+<a name="l299"><span class="ln">299  </span></a>    <span class="s2"># Spawn new obstacles as we scroll, randomly</span>
+<a name="l300"><span class="ln">300  </span></a>    <span class="s3">global </span><span class="s1">nextObstacleDistance</span><span class="s3">, </span><span class="s1">worldDistance</span>
+<a name="l301"><span class="ln">301  </span></a>
+<a name="l302"><span class="ln">302  </span></a>    <span class="s3">if </span><span class="s1">worldDistance &gt;= nextObstacleDistance:</span>
+<a name="l303"><span class="ln">303  </span></a>        <span class="s2"># Randomly choose enemy type (0, 1, or 2 for enemy1, enemy2, enemy3)</span>
+<a name="l304"><span class="ln">304  </span></a>        <span class="s1">enemyType = random.randint(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">2</span><span class="s1">)</span>
+<a name="l305"><span class="ln">305  </span></a>
+<a name="l306"><span class="ln">306  </span></a>        <span class="s2"># Create new enemy obstacle</span>
+<a name="l307"><span class="ln">307  </span></a>        <span class="s1">obstacle = {</span>
+<a name="l308"><span class="ln">308  </span></a>            <span class="s5">'x'</span><span class="s1">: WIDTH + random.randint(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">200</span><span class="s1">)</span><span class="s3">,</span>
+<a name="l309"><span class="ln">309  </span></a>            <span class="s5">'y'</span><span class="s1">: random.randint(</span><span class="s4">300</span><span class="s3">, </span><span class="s4">550</span><span class="s1">)</span><span class="s3">,</span>
+<a name="l310"><span class="ln">310  </span></a>            <span class="s5">'width'</span><span class="s1">: </span><span class="s4">70</span><span class="s3">,  </span><span class="s2"># Fixed width based on your enemy sprite size</span>
+<a name="l311"><span class="ln">311  </span></a>            <span class="s5">'height'</span><span class="s1">: </span><span class="s4">80</span><span class="s3">,  </span><span class="s2"># Fixed height based on your enemy sprite size</span>
+<a name="l312"><span class="ln">312  </span></a>            <span class="s5">'enemyType'</span><span class="s1">: enemyType</span><span class="s3">,  </span><span class="s2"># 0=enemy1, 1=enemy2, 2=enemy3</span>
+<a name="l313"><span class="ln">313  </span></a>            <span class="s5">'currentFrame'</span><span class="s1">: </span><span class="s4">0.0</span><span class="s3">,  </span><span class="s2"># Current animation frame (float for smooth animation)</span>
+<a name="l314"><span class="ln">314  </span></a>            <span class="s5">'color'</span><span class="s1">: (random.randint(</span><span class="s4">100</span><span class="s3">, </span><span class="s4">255</span><span class="s1">)</span><span class="s3">, </span><span class="s1">random.randint(</span><span class="s4">100</span><span class="s3">, </span><span class="s4">255</span><span class="s1">)</span><span class="s3">, </span><span class="s1">random.randint(</span><span class="s4">100</span><span class="s3">, </span><span class="s4">255</span><span class="s1">))</span><span class="s3">,  </span><span class="s2"># Keep as fallback</span>
+<a name="l315"><span class="ln">315  </span></a>            <span class="s5">'isHit'</span><span class="s1">: </span><span class="s3">False,  </span><span class="s2"># Track if enemy has been hit</span>
+<a name="l316"><span class="ln">316  </span></a>            <span class="s5">'hitTime'</span><span class="s1">: </span><span class="s4">0  </span><span class="s2"># When the enemy was hit</span>
+<a name="l317"><span class="ln">317  </span></a>        <span class="s1">}</span>
+<a name="l318"><span class="ln">318  </span></a>
+<a name="l319"><span class="ln">319  </span></a>        <span class="s1">obstacles.append(obstacle)</span>
+<a name="l320"><span class="ln">320  </span></a>        <span class="s1">nextObstacleDistance += random.randint(</span><span class="s4">300</span><span class="s3">, </span><span class="s4">800</span><span class="s1">)</span>
+<a name="l321"><span class="ln">321  </span></a>
+<a name="l322"><span class="ln">322  </span></a>
+<a name="l323"><span class="ln">323  </span></a><span class="s3">def </span><span class="s1">updateObstacles(scrollSpeed):</span>
+<a name="l324"><span class="ln">324  </span></a>    <span class="s2">#Move obstacles with the scrolling and remove off-screen ones</span>
+<a name="l325"><span class="ln">325  </span></a>    <span class="s3">global </span><span class="s1">obstacles</span>
+<a name="l326"><span class="ln">326  </span></a>
+<a name="l327"><span class="ln">327  </span></a>    <span class="s3">for </span><span class="s1">obstacle </span><span class="s3">in </span><span class="s1">obstacles[:]:</span>
+<a name="l328"><span class="ln">328  </span></a>        <span class="s1">obstacle[</span><span class="s5">'x'</span><span class="s1">] -= scrollSpeed</span>
+<a name="l329"><span class="ln">329  </span></a>
+<a name="l330"><span class="ln">330  </span></a>        <span class="s2"># Update enemy animation only if not hit</span>
+<a name="l331"><span class="ln">331  </span></a>        <span class="s3">if not </span><span class="s1">obstacle[</span><span class="s5">'isHit'</span><span class="s1">]:</span>
+<a name="l332"><span class="ln">332  </span></a>            <span class="s1">obstacle[</span><span class="s5">'currentFrame'</span><span class="s1">] += enemyAnimationSpeed</span>
+<a name="l333"><span class="ln">333  </span></a>
+<a name="l334"><span class="ln">334  </span></a>            <span class="s2"># Reset animation frame based on enemy type (all have 2 frames)</span>
+<a name="l335"><span class="ln">335  </span></a>            <span class="s3">if </span><span class="s1">obstacle[</span><span class="s5">'currentFrame'</span><span class="s1">] &gt;= </span><span class="s4">2</span><span class="s1">:</span>
+<a name="l336"><span class="ln">336  </span></a>                <span class="s1">obstacle[</span><span class="s5">'currentFrame'</span><span class="s1">] = </span><span class="s4">0.0</span>
+<a name="l337"><span class="ln">337  </span></a>
+<a name="l338"><span class="ln">338  </span></a>        <span class="s2"># Remove obstacles that have scrolled off the left side</span>
+<a name="l339"><span class="ln">339  </span></a>        <span class="s3">if </span><span class="s1">obstacle[</span><span class="s5">'x'</span><span class="s1">] + obstacle[</span><span class="s5">'width'</span><span class="s1">] &lt; -</span><span class="s4">100</span><span class="s1">:</span>
+<a name="l340"><span class="ln">340  </span></a>            <span class="s1">obstacles.remove(obstacle)</span>
+<a name="l341"><span class="ln">341  </span></a>
+<a name="l342"><span class="ln">342  </span></a>
+<a name="l343"><span class="ln">343  </span></a><span class="s3">def </span><span class="s1">drawObstacles():</span>
+<a name="l344"><span class="ln">344  </span></a>    <span class="s2">#Draw all current obstacles with enemy sprites or stars if hit</span>
+<a name="l345"><span class="ln">345  </span></a>    <span class="s1">current_time = pygame.time.get_ticks()</span>
+<a name="l346"><span class="ln">346  </span></a>
+<a name="l347"><span class="ln">347  </span></a>    <span class="s3">for </span><span class="s1">obstacle </span><span class="s3">in </span><span class="s1">obstacles[:]:</span>
+<a name="l348"><span class="ln">348  </span></a>        <span class="s3">if </span><span class="s1">obstacle[</span><span class="s5">'isHit'</span><span class="s1">]:</span>
+<a name="l349"><span class="ln">349  </span></a>            <span class="s2"># Draw star instead of enemy</span>
+<a name="l350"><span class="ln">350  </span></a>            <span class="s1">screen.blit(star</span><span class="s3">, </span><span class="s1">(obstacle[</span><span class="s5">'x'</span><span class="s1">]</span><span class="s3">, </span><span class="s1">obstacle[</span><span class="s5">'y'</span><span class="s1">]))</span>
+<a name="l351"><span class="ln">351  </span></a>
+<a name="l352"><span class="ln">352  </span></a>            <span class="s2"># Remove star after 1 second (1000 milliseconds)</span>
+<a name="l353"><span class="ln">353  </span></a>            <span class="s3">if </span><span class="s1">current_time - obstacle[</span><span class="s5">'hitTime'</span><span class="s1">] &gt; </span><span class="s4">1000</span><span class="s1">:</span>
+<a name="l354"><span class="ln">354  </span></a>                <span class="s1">obstacles.remove(obstacle)</span>
+<a name="l355"><span class="ln">355  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l356"><span class="ln">356  </span></a>            <span class="s2"># Get the appropriate enemy sprite list and current frame</span>
+<a name="l357"><span class="ln">357  </span></a>            <span class="s1">enemyType = obstacle[</span><span class="s5">'enemyType'</span><span class="s1">]</span>
+<a name="l358"><span class="ln">358  </span></a>            <span class="s1">frameIndex = int(obstacle[</span><span class="s5">'currentFrame'</span><span class="s1">])</span>
+<a name="l359"><span class="ln">359  </span></a>
+<a name="l360"><span class="ln">360  </span></a>            <span class="s3">if </span><span class="s1">enemyType == </span><span class="s4">0</span><span class="s1">:</span>
+<a name="l361"><span class="ln">361  </span></a>                <span class="s2"># Use enemy1 sprites</span>
+<a name="l362"><span class="ln">362  </span></a>                <span class="s1">screen.blit(enemy1[frameIndex]</span><span class="s3">, </span><span class="s1">(obstacle[</span><span class="s5">'x'</span><span class="s1">]</span><span class="s3">, </span><span class="s1">obstacle[</span><span class="s5">'y'</span><span class="s1">]))</span>
+<a name="l363"><span class="ln">363  </span></a>            <span class="s3">elif </span><span class="s1">enemyType == </span><span class="s4">1</span><span class="s1">:</span>
+<a name="l364"><span class="ln">364  </span></a>                <span class="s2"># Use enemy2 sprites</span>
+<a name="l365"><span class="ln">365  </span></a>                <span class="s1">screen.blit(enemy2[frameIndex]</span><span class="s3">, </span><span class="s1">(obstacle[</span><span class="s5">'x'</span><span class="s1">]</span><span class="s3">, </span><span class="s1">obstacle[</span><span class="s5">'y'</span><span class="s1">]))</span>
+<a name="l366"><span class="ln">366  </span></a>            <span class="s3">elif </span><span class="s1">enemyType == </span><span class="s4">2</span><span class="s1">:</span>
+<a name="l367"><span class="ln">367  </span></a>                <span class="s2"># Use enemy3 sprites</span>
+<a name="l368"><span class="ln">368  </span></a>                <span class="s1">screen.blit(enemy3[frameIndex]</span><span class="s3">, </span><span class="s1">(obstacle[</span><span class="s5">'x'</span><span class="s1">]</span><span class="s3">, </span><span class="s1">obstacle[</span><span class="s5">'y'</span><span class="s1">]))</span>
+<a name="l369"><span class="ln">369  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l370"><span class="ln">370  </span></a>                <span class="s2"># Fallback to rectangle if something goes wrong</span>
+<a name="l371"><span class="ln">371  </span></a>                <span class="s1">pygame.draw.rect(screen</span><span class="s3">, </span><span class="s1">obstacle[</span><span class="s5">'color'</span><span class="s1">]</span><span class="s3">,</span>
+<a name="l372"><span class="ln">372  </span></a>                                 <span class="s1">(obstacle[</span><span class="s5">'x'</span><span class="s1">]</span><span class="s3">, </span><span class="s1">obstacle[</span><span class="s5">'y'</span><span class="s1">]</span><span class="s3">, </span><span class="s1">obstacle[</span><span class="s5">'width'</span><span class="s1">]</span><span class="s3">, </span><span class="s1">obstacle[</span><span class="s5">'height'</span><span class="s1">]))</span>
+<a name="l373"><span class="ln">373  </span></a>
+<a name="l374"><span class="ln">374  </span></a><span class="s3">def </span><span class="s1">obstacleCollision():</span>
+<a name="l375"><span class="ln">375  </span></a>    <span class="s2"># Handle all collision detection between characters and enemies</span>
+<a name="l376"><span class="ln">376  </span></a>    <span class="s3">global </span><span class="s1">kaelCollisionCooldown</span><span class="s3">, </span><span class="s1">lumaCollisionCooldown</span>
+<a name="l377"><span class="ln">377  </span></a>
+<a name="l378"><span class="ln">378  </span></a>    <span class="s2"># Update collision cool downs, bringing back to 0 since if cool down is too large</span>
+<a name="l379"><span class="ln">379  </span></a>    <span class="s2"># the damage happens less often in fps, even if collision occurs,</span>
+<a name="l380"><span class="ln">380  </span></a>    <span class="s2"># CHECK CONDITION IN TAKE DAMAGE</span>
+<a name="l381"><span class="ln">381  </span></a>    <span class="s3">if </span><span class="s1">kaelCollisionCooldown &gt; </span><span class="s4">0</span><span class="s1">:</span>
+<a name="l382"><span class="ln">382  </span></a>        <span class="s1">kaelCollisionCooldown -= </span><span class="s4">1</span>
+<a name="l383"><span class="ln">383  </span></a>    <span class="s3">if </span><span class="s1">lumaCollisionCooldown &gt; </span><span class="s4">0</span><span class="s1">:</span>
+<a name="l384"><span class="ln">384  </span></a>        <span class="s1">lumaCollisionCooldown -= </span><span class="s4">1</span>
+<a name="l385"><span class="ln">385  </span></a>
+<a name="l386"><span class="ln">386  </span></a>    <span class="s1">kaelRect = getCharacterRect(kaelX</span><span class="s3">, </span><span class="s1">kaelY)</span>
+<a name="l387"><span class="ln">387  </span></a>    <span class="s1">lumaRect = getCharacterRect(lumaX</span><span class="s3">, </span><span class="s1">lumaY)</span>
+<a name="l388"><span class="ln">388  </span></a>
+<a name="l389"><span class="ln">389  </span></a>    <span class="s3">for </span><span class="s1">obstacle </span><span class="s3">in </span><span class="s1">obstacles[:]:</span>
+<a name="l390"><span class="ln">390  </span></a>        <span class="s3">if </span><span class="s1">obstacle[</span><span class="s5">'isHit'</span><span class="s1">]: </span><span class="s2"># &quot;if obstacle isHit == True&quot;</span>
+<a name="l391"><span class="ln">391  </span></a>            <span class="s3">continue  </span><span class="s2"># Skip hit enemies</span>
+<a name="l392"><span class="ln">392  </span></a>
+<a name="l393"><span class="ln">393  </span></a>        <span class="s1">enemyRect = getEnemyRect(obstacle)</span>
+<a name="l394"><span class="ln">394  </span></a>
+<a name="l395"><span class="ln">395  </span></a>        <span class="s2"># Check if Kael is hitting (M key pressed) and colliding with enemy</span>
+<a name="l396"><span class="ln">396  </span></a>        <span class="s3">if </span><span class="s1">hit </span><span class="s3">and </span><span class="s1">checkCollision(kaelRect</span><span class="s3">, </span><span class="s1">enemyRect):</span>
+<a name="l397"><span class="ln">397  </span></a>            <span class="s1">hitEnemy(obstacle)</span>
+<a name="l398"><span class="ln">398  </span></a>            <span class="s3">continue  </span><span class="s2"># Don't check for damage collision if hitting</span>
+<a name="l399"><span class="ln">399  </span></a>
+<a name="l400"><span class="ln">400  </span></a>        <span class="s2"># Check for damage collisions (only if not in cooldown frames)</span>
+<a name="l401"><span class="ln">401  </span></a>        <span class="s3">if not </span><span class="s1">hit </span><span class="s3">and </span><span class="s1">checkCollision(kaelRect</span><span class="s3">, </span><span class="s1">enemyRect):</span>
+<a name="l402"><span class="ln">402  </span></a>            <span class="s1">takeDamage(</span><span class="s5">&quot;kael&quot;</span><span class="s1">)</span>
+<a name="l403"><span class="ln">403  </span></a>
+<a name="l404"><span class="ln">404  </span></a>        <span class="s3">if </span><span class="s1">checkCollision(lumaRect</span><span class="s3">, </span><span class="s1">enemyRect):</span>
+<a name="l405"><span class="ln">405  </span></a>            <span class="s1">takeDamage(</span><span class="s5">&quot;luma&quot;</span><span class="s1">)</span>
+<a name="l406"><span class="ln">406  </span></a>
+<a name="l407"><span class="ln">407  </span></a><span class="s3">def </span><span class="s1">drawInfiniteBackground():</span>
+<a name="l408"><span class="ln">408  </span></a>    <span class="s2">#Draw repeating background tiles</span>
+<a name="l409"><span class="ln">409  </span></a>    <span class="s3">global </span><span class="s1">bgOffset</span>
+<a name="l410"><span class="ln">410  </span></a>
+<a name="l411"><span class="ln">411  </span></a>    <span class="s5">&quot;&quot;&quot; Calculate how many tiles we need to cover  
+<a name="l412"><span class="ln">412  </span></a>    # the window screen, adding 2 for the tiles to  
+<a name="l413"><span class="ln">413  </span></a>    # blit once scrolling goes off-screen&quot;&quot;&quot;</span>
+<a name="l414"><span class="ln">414  </span></a>    <span class="s1">numTiles = (WIDTH // BG_WIDTH) + </span><span class="s4">2</span>
+<a name="l415"><span class="ln">415  </span></a>
+<a name="l416"><span class="ln">416  </span></a>    <span class="s2"># Draw background tiles</span>
+<a name="l417"><span class="ln">417  </span></a>    <span class="s3">for </span><span class="s1">i </span><span class="s3">in </span><span class="s1">range(numTiles):</span>
+<a name="l418"><span class="ln">418  </span></a>        <span class="s1">x = (i * BG_WIDTH) - (bgOffset % BG_WIDTH)</span>
+<a name="l419"><span class="ln">419  </span></a>        <span class="s1">screen.blit(bg1</span><span class="s3">, </span><span class="s1">(x</span><span class="s3">, </span><span class="s4">0</span><span class="s1">))</span>
+<a name="l420"><span class="ln">420  </span></a>
+<a name="l421"><span class="ln">421  </span></a><span class="s3">def </span><span class="s1">scrollWorld(direction</span><span class="s3">, </span><span class="s1">speed):</span>
+<a name="l422"><span class="ln">422  </span></a>    <span class="s2"># Handle infinite world scrolling</span>
+<a name="l423"><span class="ln">423  </span></a>    <span class="s3">global </span><span class="s1">bgOffset</span><span class="s3">, </span><span class="s1">worldDistance</span><span class="s3">, </span><span class="s1">cameraX</span>
+<a name="l424"><span class="ln">424  </span></a>
+<a name="l425"><span class="ln">425  </span></a>    <span class="s2"># changing the coordinates and the position values to -ve OR</span>
+<a name="l426"><span class="ln">426  </span></a>    <span class="s2"># +ve by speed depending on the direction we're moving</span>
+<a name="l427"><span class="ln">427  </span></a>    <span class="s3">if </span><span class="s1">direction == </span><span class="s5">&quot;right&quot;</span><span class="s1">:</span>
+<a name="l428"><span class="ln">428  </span></a>        <span class="s1">bgOffset += speed</span>
+<a name="l429"><span class="ln">429  </span></a>        <span class="s1">worldDistance += speed</span>
+<a name="l430"><span class="ln">430  </span></a>        <span class="s1">cameraX += speed</span>
+<a name="l431"><span class="ln">431  </span></a>        <span class="s1">updateObstacles(speed)</span>
+<a name="l432"><span class="ln">432  </span></a>        <span class="s1">spawnObstacle()</span>
+<a name="l433"><span class="ln">433  </span></a>    <span class="s3">elif </span><span class="s1">direction == </span><span class="s5">&quot;left&quot;</span><span class="s1">:</span>
+<a name="l434"><span class="ln">434  </span></a>        <span class="s1">bgOffset -= speed</span>
+<a name="l435"><span class="ln">435  </span></a>        <span class="s1">worldDistance -= speed</span>
+<a name="l436"><span class="ln">436  </span></a>        <span class="s1">cameraX -= speed</span>
+<a name="l437"><span class="ln">437  </span></a>        <span class="s1">updateObstacles(-speed)</span>
+<a name="l438"><span class="ln">438  </span></a>
+<a name="l439"><span class="ln">439  </span></a><span class="s3">def </span><span class="s1">displayHomeScreen():</span>
+<a name="l440"><span class="ln">440  </span></a>    <span class="s3">global </span><span class="s1">musicStarted</span>
+<a name="l441"><span class="ln">441  </span></a>    <span class="s1">screen.blit(bg</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">))</span><span class="s2"># starting game title page</span>
+<a name="l442"><span class="ln">442  </span></a>    <span class="s1">pygame.draw.rect(screen</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)</span><span class="s3">, </span><span class="s1">playBtnRect)</span>
+<a name="l443"><span class="ln">443  </span></a>    <span class="s1">screen.blit(playBtn</span><span class="s3">, </span><span class="s1">(</span><span class="s4">800</span><span class="s3">, </span><span class="s4">600</span><span class="s1">))</span>
+<a name="l444"><span class="ln">444  </span></a>    <span class="s3">if not </span><span class="s1">musicStarted: </span><span class="s2"># using the flag to start the music, and play in a loop (-1)</span>
+<a name="l445"><span class="ln">445  </span></a>        <span class="s1">pygame.mixer.music.play(-</span><span class="s4">1</span><span class="s1">)</span>
+<a name="l446"><span class="ln">446  </span></a>        <span class="s1">musicStarted = </span><span class="s3">True</span>
+<a name="l447"><span class="ln">447  </span></a>
+<a name="l448"><span class="ln">448  </span></a><span class="s3">def </span><span class="s1">displayInstrucScreen():</span>
+<a name="l449"><span class="ln">449  </span></a>    <span class="s1">screen.blit(control</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)) </span><span class="s2"># displaying the controls/instruction screen</span>
+<a name="l450"><span class="ln">450  </span></a>    <span class="s1">pygame.draw.rect(screen</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">)</span><span class="s3">, </span><span class="s1">nextBtnRect)</span>
+<a name="l451"><span class="ln">451  </span></a>    <span class="s1">screen.blit(nextBtn</span><span class="s3">, </span><span class="s1">(</span><span class="s4">500</span><span class="s3">, </span><span class="s4">600</span><span class="s1">))</span>
+<a name="l452"><span class="ln">452  </span></a>
+<a name="l453"><span class="ln">453  </span></a><span class="s3">def </span><span class="s1">displayGameOver():</span>
+<a name="l454"><span class="ln">454  </span></a>    <span class="s3">global </span><span class="s1">scores</span><span class="s3">, </span><span class="s1">scoreWritten</span>
+<a name="l455"><span class="ln">455  </span></a>    <span class="s2">#Display game over screen</span>
+<a name="l456"><span class="ln">456  </span></a>    <span class="s2"># Semi-transparent overlay, see through black layer</span>
+<a name="l457"><span class="ln">457  </span></a>    <span class="s1">overlay = pygame.Surface((WIDTH</span><span class="s3">, </span><span class="s1">HEIGHT))</span>
+<a name="l458"><span class="ln">458  </span></a>    <span class="s1">overlay.set_alpha(</span><span class="s4">128</span><span class="s1">)</span>
+<a name="l459"><span class="ln">459  </span></a>    <span class="s1">overlay.fill((</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">))</span>
+<a name="l460"><span class="ln">460  </span></a>    <span class="s1">screen.blit(overlay</span><span class="s3">, </span><span class="s1">(</span><span class="s4">0</span><span class="s3">, </span><span class="s4">0</span><span class="s1">))</span>
+<a name="l461"><span class="ln">461  </span></a>
+<a name="l462"><span class="ln">462  </span></a>    <span class="s2"># Game over text</span>
+<a name="l463"><span class="ln">463  </span></a>    <span class="s1">font_large = pygame.font.Font(</span><span class="s5">&quot;icons,sprites/m6x11.ttf&quot;</span><span class="s3">, </span><span class="s4">72</span><span class="s1">)</span>
+<a name="l464"><span class="ln">464  </span></a>    <span class="s1">font_medium = pygame.font.Font(</span><span class="s5">&quot;icons,sprites/m6x11.ttf&quot;</span><span class="s3">, </span><span class="s4">48</span><span class="s1">)</span>
+<a name="l465"><span class="ln">465  </span></a>
+<a name="l466"><span class="ln">466  </span></a>    <span class="s1">game_over_text = font_large.render(</span><span class="s5">&quot;GAME OVER&quot;</span><span class="s3">, True, </span><span class="s1">(</span><span class="s4">238</span><span class="s3">, </span><span class="s4">5</span><span class="s3">, </span><span class="s4">39</span><span class="s1">))</span>
+<a name="l467"><span class="ln">467  </span></a>    <span class="s1">final_score_text = font_medium.render(</span><span class="s5">f&quot;Final Score: </span><span class="s3">{</span><span class="s1">score</span><span class="s3">}</span><span class="s5">&quot;</span><span class="s3">, True, </span><span class="s1">(</span><span class="s4">242</span><span class="s3">, </span><span class="s4">52</span><span class="s3">, </span><span class="s4">215</span><span class="s1">))</span>
+<a name="l468"><span class="ln">468  </span></a>    <span class="s1">final_distance_text = font_medium.render(</span><span class="s5">f&quot;Distance Traveled: </span><span class="s3">{</span><span class="s1">int(worldDistance)</span><span class="s3">}</span><span class="s5">&quot;</span><span class="s3">, True, </span><span class="s1">(</span><span class="s4">85</span><span class="s3">, </span><span class="s4">7</span><span class="s3">, </span><span class="s4">139</span><span class="s1">))</span>
+<a name="l469"><span class="ln">469  </span></a>    <span class="s1">restart_text = font_medium.render(</span><span class="s5">&quot;Press R to Restart or ESC to Quit&quot;</span><span class="s3">, True, </span><span class="s1">(</span><span class="s4">250</span><span class="s3">, </span><span class="s4">226</span><span class="s3">, </span><span class="s4">5</span><span class="s1">))</span>
+<a name="l470"><span class="ln">470  </span></a>
+<a name="l471"><span class="ln">471  </span></a>    <span class="s2"># Center the text</span>
+<a name="l472"><span class="ln">472  </span></a>    <span class="s2">#dividing the screen by 2, and subtracting the width of the</span>
+<a name="l473"><span class="ln">473  </span></a>    <span class="s2"># text itself to align perfect center by shift</span>
+<a name="l474"><span class="ln">474  </span></a>    <span class="s2">#USING .get_width() TO GET THE WIDTH</span>
+<a name="l475"><span class="ln">475  </span></a>    <span class="s1">screen.blit(game_over_text</span><span class="s3">, </span><span class="s1">(WIDTH//</span><span class="s4">2 </span><span class="s1">- game_over_text.get_width()//</span><span class="s4">2</span><span class="s3">, </span><span class="s1">HEIGHT//</span><span class="s4">2 </span><span class="s1">- </span><span class="s4">100</span><span class="s1">))</span>
+<a name="l476"><span class="ln">476  </span></a>    <span class="s1">screen.blit(final_score_text</span><span class="s3">, </span><span class="s1">(WIDTH//</span><span class="s4">2 </span><span class="s1">- final_score_text.get_width()//</span><span class="s4">2</span><span class="s3">, </span><span class="s1">HEIGHT//</span><span class="s4">2 </span><span class="s1">- </span><span class="s4">20</span><span class="s1">))</span>
+<a name="l477"><span class="ln">477  </span></a>    <span class="s1">screen.blit(final_distance_text</span><span class="s3">, </span><span class="s1">(WIDTH//</span><span class="s4">2 </span><span class="s1">- final_distance_text.get_width()//</span><span class="s4">2</span><span class="s3">, </span><span class="s1">HEIGHT//</span><span class="s4">2 </span><span class="s1">+ </span><span class="s4">20</span><span class="s1">))</span>
+<a name="l478"><span class="ln">478  </span></a>    <span class="s1">screen.blit(restart_text</span><span class="s3">, </span><span class="s1">(WIDTH//</span><span class="s4">2 </span><span class="s1">- restart_text.get_width()//</span><span class="s4">2</span><span class="s3">, </span><span class="s1">HEIGHT//</span><span class="s4">2 </span><span class="s1">+ </span><span class="s4">80</span><span class="s1">))</span>
+<a name="l479"><span class="ln">479  </span></a>
+<a name="l480"><span class="ln">480  </span></a>    <span class="s5">&quot;&quot;&quot;implementing files, starting condition is always allows to pas through 
+<a name="l481"><span class="ln">481  </span></a>    using try and except blocks to prevent the program from stopping by IOError 
+<a name="l482"><span class="ln">482  </span></a>    (when trying to input or output (IO) something and failing)&quot;&quot;&quot;</span>
+<a name="l483"><span class="ln">483  </span></a>    <span class="s3">if </span><span class="s1">scoreWritten == </span><span class="s3">False</span><span class="s1">:</span>
+<a name="l484"><span class="ln">484  </span></a>        <span class="s1">scores.append(score)</span>
+<a name="l485"><span class="ln">485  </span></a>        <span class="s3">try</span><span class="s1">:</span>
+<a name="l486"><span class="ln">486  </span></a>            <span class="s1">file = open(</span><span class="s5">&quot;scores.txt&quot;</span><span class="s3">, </span><span class="s5">&quot;w&quot;</span><span class="s1">)  </span><span class="s2"># Use &quot;w&quot; to overwrite</span>
+<a name="l487"><span class="ln">487  </span></a>            <span class="s1">file.write(</span><span class="s5">&quot;All Scores</span><span class="s3">\n</span><span class="s5">&quot;</span><span class="s1">)  </span><span class="s2"># Write header</span>
+<a name="l488"><span class="ln">488  </span></a>            <span class="s3">for </span><span class="s1">s </span><span class="s3">in </span><span class="s1">scores:</span>
+<a name="l489"><span class="ln">489  </span></a>                <span class="s1">file.write(str(s) + </span><span class="s5">&quot;</span><span class="s3">\n</span><span class="s5">&quot;</span><span class="s1">)</span>
+<a name="l490"><span class="ln">490  </span></a>            <span class="s1">file.close()</span>
+<a name="l491"><span class="ln">491  </span></a>        <span class="s3">except </span><span class="s1">IOError:</span>
+<a name="l492"><span class="ln">492  </span></a>            <span class="s1">print(</span><span class="s5">&quot;error, no file to write on&quot;</span><span class="s1">)</span>
+<a name="l493"><span class="ln">493  </span></a>        <span class="s1">scoreWritten = </span><span class="s3">True</span>
+<a name="l494"><span class="ln">494  </span></a>
+<a name="l495"><span class="ln">495  </span></a>
+<a name="l496"><span class="ln">496  </span></a><span class="s3">def </span><span class="s1">resetGame():</span>
+<a name="l497"><span class="ln">497  </span></a>    <span class="s2">#Reset all game variables for restart</span>
+<a name="l498"><span class="ln">498  </span></a>    <span class="s3">global </span><span class="s1">kaelHealth</span><span class="s3">, </span><span class="s1">lumaHealth</span><span class="s3">, </span><span class="s1">score</span><span class="s3">, </span><span class="s1">obstacles</span><span class="s3">, </span><span class="s1">worldDistance</span><span class="s3">, </span><span class="s1">bgOffset</span><span class="s3">, </span><span class="s1">cameraX</span>
+<a name="l499"><span class="ln">499  </span></a>    <span class="s3">global </span><span class="s1">kaelCollisionCooldown</span><span class="s3">, </span><span class="s1">lumaCollisionCooldown</span><span class="s3">, </span><span class="s1">nextObstacleDistance</span>
+<a name="l500"><span class="ln">500  </span></a>    <span class="s3">global </span><span class="s1">kaelX</span><span class="s3">, </span><span class="s1">kaelY</span><span class="s3">, </span><span class="s1">lumaX</span><span class="s3">, </span><span class="s1">lumaY</span><span class="s3">, </span><span class="s1">scores</span><span class="s3">, </span><span class="s1">scoreWritten</span>
+<a name="l501"><span class="ln">501  </span></a>
+<a name="l502"><span class="ln">502  </span></a>    <span class="s2"># Reset health and score</span>
+<a name="l503"><span class="ln">503  </span></a>    <span class="s1">kaelHealth = </span><span class="s4">5</span>
+<a name="l504"><span class="ln">504  </span></a>    <span class="s1">lumaHealth = </span><span class="s4">5</span>
+<a name="l505"><span class="ln">505  </span></a>    <span class="s1">score = </span><span class="s4">0</span>
+<a name="l506"><span class="ln">506  </span></a>    <span class="s1">scoreWritten = </span><span class="s3">False</span>
+<a name="l507"><span class="ln">507  </span></a>
+<a name="l508"><span class="ln">508  </span></a>    <span class="s2"># Reset collision cool downs</span>
+<a name="l509"><span class="ln">509  </span></a>    <span class="s1">kaelCollisionCooldown = </span><span class="s4">0</span>
+<a name="l510"><span class="ln">510  </span></a>    <span class="s1">lumaCollisionCooldown = </span><span class="s4">0</span>
+<a name="l511"><span class="ln">511  </span></a>
+<a name="l512"><span class="ln">512  </span></a>    <span class="s2"># Reset world state</span>
+<a name="l513"><span class="ln">513  </span></a>    <span class="s1">obstacles = []</span>
+<a name="l514"><span class="ln">514  </span></a>    <span class="s1">worldDistance = </span><span class="s4">0</span>
+<a name="l515"><span class="ln">515  </span></a>    <span class="s1">bgOffset = </span><span class="s4">0</span>
+<a name="l516"><span class="ln">516  </span></a>    <span class="s1">cameraX = </span><span class="s4">0</span>
+<a name="l517"><span class="ln">517  </span></a>    <span class="s1">nextObstacleDistance = </span><span class="s4">500</span>
+<a name="l518"><span class="ln">518  </span></a>
+<a name="l519"><span class="ln">519  </span></a>    <span class="s2"># Reset character positions</span>
+<a name="l520"><span class="ln">520  </span></a>    <span class="s1">kaelX = </span><span class="s4">300</span>
+<a name="l521"><span class="ln">521  </span></a>    <span class="s1">kaelY = </span><span class="s4">500</span>
+<a name="l522"><span class="ln">522  </span></a>    <span class="s1">lumaX = </span><span class="s4">320</span>
+<a name="l523"><span class="ln">523  </span></a>    <span class="s1">lumaY = </span><span class="s4">500</span>
+<a name="l524"><span class="ln">524  </span></a>
+<a name="l525"><span class="ln">525  </span></a>    <span class="s2"># Read all scores from file with error handling</span>
+<a name="l526"><span class="ln">526  </span></a>    <span class="s1">all_scores = []</span>
+<a name="l527"><span class="ln">527  </span></a>    <span class="s3">try</span><span class="s1">:</span>
+<a name="l528"><span class="ln">528  </span></a>        <span class="s1">file = open(</span><span class="s5">&quot;scores.txt&quot;</span><span class="s3">, </span><span class="s5">&quot;r&quot;</span><span class="s1">)</span>
+<a name="l529"><span class="ln">529  </span></a>        <span class="s1">file.readline()  </span><span class="s2"># Skip the header line &quot;all scores&quot;</span>
+<a name="l530"><span class="ln">530  </span></a>        <span class="s3">for </span><span class="s1">line </span><span class="s3">in </span><span class="s1">file:</span>
+<a name="l531"><span class="ln">531  </span></a>            <span class="s1">line = line.strip()</span>
+<a name="l532"><span class="ln">532  </span></a>            <span class="s3">if </span><span class="s1">line:</span><span class="s2"># Skip empty lines, mainly saying-&quot;if the line isn't empty, and has some value</span>
+<a name="l533"><span class="ln">533  </span></a>                <span class="s3">try</span><span class="s1">:</span>
+<a name="l534"><span class="ln">534  </span></a>                    <span class="s1">all_scores.append(int(line))</span><span class="s2"># turning the string to int, so it write x instead of 'x'</span>
+<a name="l535"><span class="ln">535  </span></a>                <span class="s3">except </span><span class="s1">ValueError: </span><span class="s2">#just in case the value cannot be turned in an int</span>
+<a name="l536"><span class="ln">536  </span></a>                    <span class="s1">print(</span><span class="s5">f&quot;Warning: Invalid score format in file: </span><span class="s3">{</span><span class="s1">line</span><span class="s3">}</span><span class="s5">&quot;</span><span class="s1">)</span>
+<a name="l537"><span class="ln">537  </span></a>        <span class="s1">file.close()</span>
+<a name="l538"><span class="ln">538  </span></a>    <span class="s3">except </span><span class="s1">FileNotFoundError:</span>
+<a name="l539"><span class="ln">539  </span></a>        <span class="s1">print(</span><span class="s5">&quot;scores.txt not found - will be created when first score is saved&quot;</span><span class="s1">)</span>
+<a name="l540"><span class="ln">540  </span></a>    <span class="s3">except </span><span class="s1">IOError:</span>
+<a name="l541"><span class="ln">541  </span></a>        <span class="s1">print(</span><span class="s5">&quot;Error: Could not read scores.txt&quot;</span><span class="s1">)</span>
+<a name="l542"><span class="ln">542  </span></a>
+<a name="l543"><span class="ln">543  </span></a>    <span class="s1">print(</span><span class="s5">&quot;All scores are saved! check scores.txt file to view&quot;</span><span class="s1">)</span>
+<a name="l544"><span class="ln">544  </span></a>
+<a name="l545"><span class="ln">545  </span></a><span class="s3">def </span><span class="s1">moveRightKael():</span>
+<a name="l546"><span class="ln">546  </span></a>    <span class="s3">global </span><span class="s1">currentFrameKael</span><span class="s3">, </span><span class="s1">kaelX</span><span class="s3">, </span><span class="s1">lumaX</span>
+<a name="l547"><span class="ln">547  </span></a>
+<a name="l548"><span class="ln">548  </span></a>    <span class="s5">&quot;&quot;&quot;the instantaneous frame being displayed has to get  
+<a name="l549"><span class="ln">549  </span></a>    changed so that it can go through each index in the list of  
+<a name="l550"><span class="ln">550  </span></a>    movement to the respective character  &quot;&quot;&quot;</span>
+<a name="l551"><span class="ln">551  </span></a>    <span class="s1">currentFrameKael += frameSpeed</span>
+<a name="l552"><span class="ln">552  </span></a>    <span class="s2"># when the index reaches out of the list, you reset to loop the movement</span>
+<a name="l553"><span class="ln">553  </span></a>    <span class="s3">if </span><span class="s1">currentFrameKael &gt;= len(kaelRun):</span>
+<a name="l554"><span class="ln">554  </span></a>        <span class="s1">currentFrameKael = </span><span class="s4">0</span>
+<a name="l555"><span class="ln">555  </span></a>
+<a name="l556"><span class="ln">556  </span></a>    <span class="s2"># Move character, but check if we should scroll instead, by checking if Kael is near the</span>
+<a name="l557"><span class="ln">557  </span></a>    <span class="s2"># either edge of the screen.</span>
+<a name="l558"><span class="ln">558  </span></a>    <span class="s3">if </span><span class="s1">kaelX &lt; SCROLL_RIGHT_BOUNDARY:</span>
+<a name="l559"><span class="ln">559  </span></a>        <span class="s1">kaelX += </span><span class="s4">5</span>
+<a name="l560"><span class="ln">560  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l561"><span class="ln">561  </span></a>        <span class="s2"># Character reached scroll boundary - scroll world instead</span>
+<a name="l562"><span class="ln">562  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;right&quot;</span><span class="s3">, </span><span class="s4">5</span><span class="s1">)</span>
+<a name="l563"><span class="ln">563  </span></a>        <span class="s1">lumaX -= </span><span class="s4">5</span>
+<a name="l564"><span class="ln">564  </span></a>    <span class="s1">screen.blit(kaelRun[int(currentFrameKael)]</span><span class="s3">, </span><span class="s1">(kaelX</span><span class="s3">, </span><span class="s1">kaelY))</span>
+<a name="l565"><span class="ln">565  </span></a>
+<a name="l566"><span class="ln">566  </span></a><span class="s3">def </span><span class="s1">moveLeftKael():</span>
+<a name="l567"><span class="ln">567  </span></a>    <span class="s3">global </span><span class="s1">currentFrameKael</span><span class="s3">, </span><span class="s1">kaelX</span><span class="s3">, </span><span class="s1">lumaX</span>
+<a name="l568"><span class="ln">568  </span></a>
+<a name="l569"><span class="ln">569  </span></a>    <span class="s2"># same logic but with flipped images for left</span>
+<a name="l570"><span class="ln">570  </span></a>    <span class="s1">currentFrameKael += frameSpeed</span>
+<a name="l571"><span class="ln">571  </span></a>    <span class="s3">if </span><span class="s1">currentFrameKael &gt;= len(kaelRun):</span>
+<a name="l572"><span class="ln">572  </span></a>        <span class="s1">currentFrameKael = </span><span class="s4">0</span>
+<a name="l573"><span class="ln">573  </span></a>
+<a name="l574"><span class="ln">574  </span></a>    <span class="s2"># Move character, but check if we should scroll instead</span>
+<a name="l575"><span class="ln">575  </span></a>    <span class="s3">if </span><span class="s1">kaelX &gt; SCROLL_LEFT_BOUNDARY:</span>
+<a name="l576"><span class="ln">576  </span></a>        <span class="s1">kaelX -= </span><span class="s4">5</span>
+<a name="l577"><span class="ln">577  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l578"><span class="ln">578  </span></a>        <span class="s2"># Character reached scroll boundary - scroll world instead</span>
+<a name="l579"><span class="ln">579  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;left&quot;</span><span class="s3">, </span><span class="s4">5</span><span class="s1">)</span>
+<a name="l580"><span class="ln">580  </span></a>        <span class="s1">lumaX += </span><span class="s4">5</span>
+<a name="l581"><span class="ln">581  </span></a>    <span class="s2"># using transform.flip function, with boolean tuples, for horizontal flip, hence True</span>
+<a name="l582"><span class="ln">582  </span></a>    <span class="s1">screen.blit(pygame.transform.flip(kaelRun[int(currentFrameKael)]</span><span class="s3">, True, False</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(kaelX</span><span class="s3">, </span><span class="s1">kaelY))</span>
+<a name="l583"><span class="ln">583  </span></a>
+<a name="l584"><span class="ln">584  </span></a><span class="s3">def </span><span class="s1">jumpRightKael(gravity</span><span class="s3">, </span><span class="s1">ground):</span>
+<a name="l585"><span class="ln">585  </span></a>    <span class="s3">global </span><span class="s1">currentFrameKael</span><span class="s3">, </span><span class="s1">kaelX</span><span class="s3">, </span><span class="s1">kaelY</span><span class="s3">, </span><span class="s1">jump</span><span class="s3">, </span><span class="s1">velocityKael</span><span class="s3">, </span><span class="s1">lumaX</span>
+<a name="l586"><span class="ln">586  </span></a>
+<a name="l587"><span class="ln">587  </span></a>    <span class="s1">currentFrameKael += frameSpeed</span>
+<a name="l588"><span class="ln">588  </span></a>    <span class="s3">if </span><span class="s1">currentFrameKael &gt;= len(kaelJump):</span>
+<a name="l589"><span class="ln">589  </span></a>        <span class="s1">currentFrameKael = </span><span class="s4">0</span>
+<a name="l590"><span class="ln">590  </span></a>    <span class="s2"># the velocity is -15, so really you're subtracting 15 from the y-value</span>
+<a name="l591"><span class="ln">591  </span></a>    <span class="s1">kaelY += velocityKael</span>
+<a name="l592"><span class="ln">592  </span></a>    <span class="s2"># while doing so, we also want to increase the velocity each time so,</span>
+<a name="l593"><span class="ln">593  </span></a>    <span class="s2"># we are subtracting less and less each time, bringing kael back to the ground</span>
+<a name="l594"><span class="ln">594  </span></a>    <span class="s1">velocityKael += gravity</span>
+<a name="l595"><span class="ln">595  </span></a>
+<a name="l596"><span class="ln">596  </span></a>    <span class="s2"># Handle horizontal movement during jump</span>
+<a name="l597"><span class="ln">597  </span></a>    <span class="s3">if </span><span class="s1">kaelX &lt; SCROLL_RIGHT_BOUNDARY:</span>
+<a name="l598"><span class="ln">598  </span></a>        <span class="s1">kaelX += </span><span class="s4">3</span>
+<a name="l599"><span class="ln">599  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l600"><span class="ln">600  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;right&quot;</span><span class="s3">, </span><span class="s4">3</span><span class="s1">)</span>
+<a name="l601"><span class="ln">601  </span></a>        <span class="s1">lumaX -= </span><span class="s4">3</span>
+<a name="l602"><span class="ln">602  </span></a>
+<a name="l603"><span class="ln">603  </span></a>    <span class="s5">&quot;&quot;&quot; when the velocity becomes a positive int, and starts  
+<a name="l604"><span class="ln">604  </span></a>    bring kael down from GROUND LEVEL, we set kael's y back to the ground, reset jump  
+<a name="l605"><span class="ln">605  </span></a>    flag and velocity becomes -15 again to bring kael up when jump is true again&quot;&quot;&quot;</span>
+<a name="l606"><span class="ln">606  </span></a>    <span class="s3">if </span><span class="s1">kaelY &gt; ground:</span>
+<a name="l607"><span class="ln">607  </span></a>        <span class="s1">kaelY = ground</span>
+<a name="l608"><span class="ln">608  </span></a>        <span class="s1">jump = </span><span class="s3">False</span>
+<a name="l609"><span class="ln">609  </span></a>        <span class="s1">velocityKael = -</span><span class="s4">15</span>
+<a name="l610"><span class="ln">610  </span></a>
+<a name="l611"><span class="ln">611  </span></a>    <span class="s1">screen.blit(kaelJump[int(currentFrameKael)]</span><span class="s3">, </span><span class="s1">(kaelX</span><span class="s3">, </span><span class="s1">kaelY))</span>
+<a name="l612"><span class="ln">612  </span></a>
+<a name="l613"><span class="ln">613  </span></a><span class="s3">def </span><span class="s1">jumpLeftKael(gravity</span><span class="s3">, </span><span class="s1">ground):</span>
+<a name="l614"><span class="ln">614  </span></a>    <span class="s2"># same logic but pasting flipped image</span>
+<a name="l615"><span class="ln">615  </span></a>    <span class="s3">global </span><span class="s1">currentFrameKael</span><span class="s3">, </span><span class="s1">kaelX</span><span class="s3">, </span><span class="s1">kaelY</span><span class="s3">, </span><span class="s1">jump</span><span class="s3">, </span><span class="s1">velocityKael</span><span class="s3">, </span><span class="s1">lumaX</span>
+<a name="l616"><span class="ln">616  </span></a>    <span class="s1">currentFrameKael += frameSpeed</span>
+<a name="l617"><span class="ln">617  </span></a>    <span class="s3">if </span><span class="s1">currentFrameKael &gt;= len(kaelJump):</span>
+<a name="l618"><span class="ln">618  </span></a>        <span class="s1">currentFrameKael = </span><span class="s4">0</span>
+<a name="l619"><span class="ln">619  </span></a>
+<a name="l620"><span class="ln">620  </span></a>    <span class="s1">kaelY += velocityKael</span>
+<a name="l621"><span class="ln">621  </span></a>    <span class="s1">velocityKael += gravity</span>
+<a name="l622"><span class="ln">622  </span></a>
+<a name="l623"><span class="ln">623  </span></a>    <span class="s2"># Handle horizontal movement during jump</span>
+<a name="l624"><span class="ln">624  </span></a>    <span class="s3">if </span><span class="s1">kaelX &gt; SCROLL_LEFT_BOUNDARY:</span>
+<a name="l625"><span class="ln">625  </span></a>        <span class="s1">kaelX -= </span><span class="s4">3</span>
+<a name="l626"><span class="ln">626  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l627"><span class="ln">627  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;left&quot;</span><span class="s3">, </span><span class="s4">3</span><span class="s1">)</span>
+<a name="l628"><span class="ln">628  </span></a>        <span class="s1">lumaX += </span><span class="s4">3</span>
+<a name="l629"><span class="ln">629  </span></a>
+<a name="l630"><span class="ln">630  </span></a>    <span class="s3">if </span><span class="s1">kaelY &gt; ground:</span>
+<a name="l631"><span class="ln">631  </span></a>        <span class="s1">kaelY = ground</span>
+<a name="l632"><span class="ln">632  </span></a>        <span class="s1">jump = </span><span class="s3">False</span>
+<a name="l633"><span class="ln">633  </span></a>        <span class="s1">velocityKael = -</span><span class="s4">15</span>
+<a name="l634"><span class="ln">634  </span></a>
+<a name="l635"><span class="ln">635  </span></a>    <span class="s1">screen.blit(pygame.transform.flip(kaelJump[int(currentFrameKael)]</span><span class="s3">, True, False</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(kaelX</span><span class="s3">, </span><span class="s1">kaelY))</span>
+<a name="l636"><span class="ln">636  </span></a>
+<a name="l637"><span class="ln">637  </span></a><span class="s3">def </span><span class="s1">hitRightKael():</span>
+<a name="l638"><span class="ln">638  </span></a>    <span class="s3">global </span><span class="s1">currentFrameKael</span><span class="s3">, </span><span class="s1">kaelX</span><span class="s3">, </span><span class="s1">lumaX</span>
+<a name="l639"><span class="ln">639  </span></a>    <span class="s1">currentFrameKael += frameSpeed</span>
+<a name="l640"><span class="ln">640  </span></a>    <span class="s3">if </span><span class="s1">currentFrameKael &gt;= len(kaelHit):</span>
+<a name="l641"><span class="ln">641  </span></a>        <span class="s1">currentFrameKael = </span><span class="s4">0</span>
+<a name="l642"><span class="ln">642  </span></a>
+<a name="l643"><span class="ln">643  </span></a>    <span class="s3">if </span><span class="s1">kaelX &lt; SCROLL_RIGHT_BOUNDARY:</span>
+<a name="l644"><span class="ln">644  </span></a>        <span class="s1">kaelX += </span><span class="s4">5</span>
+<a name="l645"><span class="ln">645  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l646"><span class="ln">646  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;right&quot;</span><span class="s3">, </span><span class="s4">5</span><span class="s1">)</span>
+<a name="l647"><span class="ln">647  </span></a>        <span class="s1">lumaX -= </span><span class="s4">5</span>
+<a name="l648"><span class="ln">648  </span></a>
+<a name="l649"><span class="ln">649  </span></a>    <span class="s1">screen.blit(kaelHit[int(currentFrameKael)]</span><span class="s3">, </span><span class="s1">(kaelX</span><span class="s3">, </span><span class="s1">kaelY))</span>
+<a name="l650"><span class="ln">650  </span></a>
+<a name="l651"><span class="ln">651  </span></a><span class="s3">def </span><span class="s1">hitLeftKael():</span>
+<a name="l652"><span class="ln">652  </span></a>    <span class="s3">global </span><span class="s1">currentFrameKael</span><span class="s3">, </span><span class="s1">kaelX</span><span class="s3">, </span><span class="s1">lumaX</span>
+<a name="l653"><span class="ln">653  </span></a>    <span class="s1">currentFrameKael += frameSpeed</span>
+<a name="l654"><span class="ln">654  </span></a>    <span class="s3">if </span><span class="s1">currentFrameKael &gt;= len(kaelHit):</span>
+<a name="l655"><span class="ln">655  </span></a>        <span class="s1">currentFrameKael = </span><span class="s4">0</span>
+<a name="l656"><span class="ln">656  </span></a>
+<a name="l657"><span class="ln">657  </span></a>    <span class="s3">if </span><span class="s1">kaelX &gt; SCROLL_LEFT_BOUNDARY:</span>
+<a name="l658"><span class="ln">658  </span></a>        <span class="s1">kaelX -= </span><span class="s4">5</span>
+<a name="l659"><span class="ln">659  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l660"><span class="ln">660  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;left&quot;</span><span class="s3">, </span><span class="s4">5</span><span class="s1">)</span>
+<a name="l661"><span class="ln">661  </span></a>        <span class="s1">lumaX += </span><span class="s4">5</span>
+<a name="l662"><span class="ln">662  </span></a>
+<a name="l663"><span class="ln">663  </span></a>    <span class="s1">screen.blit(pygame.transform.flip(kaelHit[int(currentFrameKael)]</span><span class="s3">, True, False</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(kaelX</span><span class="s3">, </span><span class="s1">kaelY))</span>
+<a name="l664"><span class="ln">664  </span></a>
+<a name="l665"><span class="ln">665  </span></a><span class="s2"># EXACT SAME IDEA BUT WITH LUMA'S IMAGES</span>
+<a name="l666"><span class="ln">666  </span></a><span class="s3">def </span><span class="s1">moveRightLuma():</span>
+<a name="l667"><span class="ln">667  </span></a>    <span class="s3">global </span><span class="s1">currentFrameLuma</span><span class="s3">, </span><span class="s1">lumaX</span><span class="s3">, </span><span class="s1">kaelX</span>
+<a name="l668"><span class="ln">668  </span></a>    <span class="s1">currentFrameLuma += frameSpeed</span>
+<a name="l669"><span class="ln">669  </span></a>    <span class="s3">if </span><span class="s1">currentFrameLuma &gt;= len(lumaRun):</span>
+<a name="l670"><span class="ln">670  </span></a>        <span class="s1">currentFrameLuma = </span><span class="s4">0</span>
+<a name="l671"><span class="ln">671  </span></a>
+<a name="l672"><span class="ln">672  </span></a>    <span class="s3">if </span><span class="s1">lumaX &lt; SCROLL_RIGHT_BOUNDARY:</span>
+<a name="l673"><span class="ln">673  </span></a>        <span class="s1">lumaX += </span><span class="s4">5</span>
+<a name="l674"><span class="ln">674  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l675"><span class="ln">675  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;right&quot;</span><span class="s3">, </span><span class="s4">5</span><span class="s1">)</span>
+<a name="l676"><span class="ln">676  </span></a>        <span class="s1">kaelX -= </span><span class="s4">5</span>
+<a name="l677"><span class="ln">677  </span></a>
+<a name="l678"><span class="ln">678  </span></a>    <span class="s1">screen.blit(lumaRun[int(currentFrameLuma)]</span><span class="s3">, </span><span class="s1">(lumaX</span><span class="s3">, </span><span class="s1">lumaY))</span>
+<a name="l679"><span class="ln">679  </span></a>
+<a name="l680"><span class="ln">680  </span></a><span class="s3">def </span><span class="s1">moveLeftLuma():</span>
+<a name="l681"><span class="ln">681  </span></a>    <span class="s3">global </span><span class="s1">currentFrameLuma</span><span class="s3">, </span><span class="s1">lumaX</span><span class="s3">, </span><span class="s1">kaelX</span>
+<a name="l682"><span class="ln">682  </span></a>    <span class="s1">currentFrameLuma += frameSpeed</span>
+<a name="l683"><span class="ln">683  </span></a>    <span class="s3">if </span><span class="s1">currentFrameLuma &gt;= len(lumaRun):</span>
+<a name="l684"><span class="ln">684  </span></a>        <span class="s1">currentFrameLuma = </span><span class="s4">0</span>
+<a name="l685"><span class="ln">685  </span></a>
+<a name="l686"><span class="ln">686  </span></a>    <span class="s3">if </span><span class="s1">lumaX &gt; SCROLL_LEFT_BOUNDARY:</span>
+<a name="l687"><span class="ln">687  </span></a>        <span class="s1">lumaX -= </span><span class="s4">5</span>
+<a name="l688"><span class="ln">688  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l689"><span class="ln">689  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;left&quot;</span><span class="s3">, </span><span class="s4">5</span><span class="s1">)</span>
+<a name="l690"><span class="ln">690  </span></a>        <span class="s1">kaelX += </span><span class="s4">5</span>
+<a name="l691"><span class="ln">691  </span></a>
+<a name="l692"><span class="ln">692  </span></a>    <span class="s1">screen.blit(pygame.transform.flip(lumaRun[int(currentFrameLuma)]</span><span class="s3">, True, False</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(lumaX</span><span class="s3">, </span><span class="s1">lumaY))</span>
+<a name="l693"><span class="ln">693  </span></a>
+<a name="l694"><span class="ln">694  </span></a><span class="s3">def </span><span class="s1">jumpLeftLuma(gravity</span><span class="s3">, </span><span class="s1">ground):</span>
+<a name="l695"><span class="ln">695  </span></a>    <span class="s3">global </span><span class="s1">currentFrameLuma</span><span class="s3">, </span><span class="s1">lumaX</span><span class="s3">, </span><span class="s1">lumaY</span><span class="s3">, </span><span class="s1">jumpL</span><span class="s3">, </span><span class="s1">velocityLuma</span><span class="s3">, </span><span class="s1">kaelX</span>
+<a name="l696"><span class="ln">696  </span></a>    <span class="s1">currentFrameLuma += frameSpeed</span>
+<a name="l697"><span class="ln">697  </span></a>    <span class="s3">if </span><span class="s1">currentFrameLuma &gt;= len(lumaJump):</span>
+<a name="l698"><span class="ln">698  </span></a>        <span class="s1">currentFrameLuma = </span><span class="s4">0</span>
+<a name="l699"><span class="ln">699  </span></a>
+<a name="l700"><span class="ln">700  </span></a>    <span class="s1">lumaY += velocityLuma</span>
+<a name="l701"><span class="ln">701  </span></a>    <span class="s1">velocityLuma += gravity</span>
+<a name="l702"><span class="ln">702  </span></a>
+<a name="l703"><span class="ln">703  </span></a>    <span class="s3">if </span><span class="s1">lumaX &gt; SCROLL_LEFT_BOUNDARY:</span>
+<a name="l704"><span class="ln">704  </span></a>        <span class="s1">lumaX -= </span><span class="s4">3</span>
+<a name="l705"><span class="ln">705  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l706"><span class="ln">706  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;left&quot;</span><span class="s3">, </span><span class="s4">3</span><span class="s1">)</span>
+<a name="l707"><span class="ln">707  </span></a>        <span class="s1">kaelX += </span><span class="s4">3</span>
+<a name="l708"><span class="ln">708  </span></a>
+<a name="l709"><span class="ln">709  </span></a>    <span class="s3">if </span><span class="s1">lumaY &gt; ground:</span>
+<a name="l710"><span class="ln">710  </span></a>        <span class="s1">lumaY = ground</span>
+<a name="l711"><span class="ln">711  </span></a>        <span class="s1">jumpL = </span><span class="s3">False</span>
+<a name="l712"><span class="ln">712  </span></a>        <span class="s1">velocityLuma = -</span><span class="s4">15</span>
+<a name="l713"><span class="ln">713  </span></a>
+<a name="l714"><span class="ln">714  </span></a>    <span class="s1">screen.blit(pygame.transform.flip(lumaJump[int(currentFrameLuma)]</span><span class="s3">, True, False</span><span class="s1">)</span><span class="s3">, </span><span class="s1">(lumaX</span><span class="s3">, </span><span class="s1">lumaY))</span>
+<a name="l715"><span class="ln">715  </span></a>
+<a name="l716"><span class="ln">716  </span></a>
+<a name="l717"><span class="ln">717  </span></a><span class="s3">def </span><span class="s1">jumpRightLuma(gravity</span><span class="s3">, </span><span class="s1">ground):</span>
+<a name="l718"><span class="ln">718  </span></a>    <span class="s3">global </span><span class="s1">currentFrameLuma</span><span class="s3">, </span><span class="s1">lumaX</span><span class="s3">, </span><span class="s1">lumaY</span><span class="s3">, </span><span class="s1">jumpL</span><span class="s3">, </span><span class="s1">velocityLuma</span><span class="s3">, </span><span class="s1">kaelX</span>
+<a name="l719"><span class="ln">719  </span></a>    <span class="s1">currentFrameLuma += frameSpeed</span>
+<a name="l720"><span class="ln">720  </span></a>    <span class="s3">if </span><span class="s1">currentFrameLuma &gt;= len(lumaJump):</span>
+<a name="l721"><span class="ln">721  </span></a>        <span class="s1">currentFrameLuma = </span><span class="s4">0</span>
+<a name="l722"><span class="ln">722  </span></a>
+<a name="l723"><span class="ln">723  </span></a>    <span class="s1">lumaY += velocityLuma</span>
+<a name="l724"><span class="ln">724  </span></a>    <span class="s1">velocityLuma += gravity</span>
+<a name="l725"><span class="ln">725  </span></a>
+<a name="l726"><span class="ln">726  </span></a>    <span class="s3">if </span><span class="s1">lumaX &lt; SCROLL_RIGHT_BOUNDARY:</span>
+<a name="l727"><span class="ln">727  </span></a>        <span class="s1">lumaX += </span><span class="s4">3</span>
+<a name="l728"><span class="ln">728  </span></a>    <span class="s3">else</span><span class="s1">:</span>
+<a name="l729"><span class="ln">729  </span></a>        <span class="s1">scrollWorld(</span><span class="s5">&quot;right&quot;</span><span class="s3">, </span><span class="s4">3</span><span class="s1">)</span>
+<a name="l730"><span class="ln">730  </span></a>        <span class="s1">kaelX -= </span><span class="s4">3</span>
+<a name="l731"><span class="ln">731  </span></a>
+<a name="l732"><span class="ln">732  </span></a>    <span class="s3">if </span><span class="s1">lumaY &gt; ground:</span>
+<a name="l733"><span class="ln">733  </span></a>        <span class="s1">lumaY = ground</span>
+<a name="l734"><span class="ln">734  </span></a>        <span class="s1">jumpL = </span><span class="s3">False</span>
+<a name="l735"><span class="ln">735  </span></a>        <span class="s1">velocityLuma = -</span><span class="s4">15</span>
+<a name="l736"><span class="ln">736  </span></a>
+<a name="l737"><span class="ln">737  </span></a>    <span class="s1">screen.blit(lumaJump[int(currentFrameLuma)]</span><span class="s3">, </span><span class="s1">(lumaX</span><span class="s3">, </span><span class="s1">lumaY))</span>
+<a name="l738"><span class="ln">738  </span></a>
+<a name="l739"><span class="ln">739  </span></a><span class="s2"># Main game loop</span>
+<a name="l740"><span class="ln">740  </span></a><span class="s3">while True</span><span class="s1">:</span>
+<a name="l741"><span class="ln">741  </span></a>    <span class="s3">for </span><span class="s1">event </span><span class="s3">in </span><span class="s1">pygame.event.get():</span>
+<a name="l742"><span class="ln">742  </span></a>        <span class="s3">if </span><span class="s1">event.type == pygame.QUIT:</span>
+<a name="l743"><span class="ln">743  </span></a>            <span class="s1">pygame.mixer.music.stop()</span>
+<a name="l744"><span class="ln">744  </span></a>            <span class="s1">pygame.quit()</span>
+<a name="l745"><span class="ln">745  </span></a>            <span class="s1">sys.exit()</span>
+<a name="l746"><span class="ln">746  </span></a>
+<a name="l747"><span class="ln">747  </span></a>        <span class="s3">if </span><span class="s1">event.type == pygame.MOUSEBUTTONDOWN:</span>
+<a name="l748"><span class="ln">748  </span></a>            <span class="s3">if </span><span class="s1">playBtnRect.collidepoint(event.pos):</span>
+<a name="l749"><span class="ln">749  </span></a>                <span class="s1">gameState = </span><span class="s5">&quot;introduction&quot;</span>
+<a name="l750"><span class="ln">750  </span></a>            <span class="s3">elif </span><span class="s1">nextBtnRect.collidepoint(event.pos):</span>
+<a name="l751"><span class="ln">751  </span></a>                <span class="s1">gameState = </span><span class="s5">&quot;begin&quot;</span>
+<a name="l752"><span class="ln">752  </span></a>
+<a name="l753"><span class="ln">753  </span></a>        <span class="s2"># Game over screen controls</span>
+<a name="l754"><span class="ln">754  </span></a>        <span class="s3">if </span><span class="s1">gameState == </span><span class="s5">&quot;gameOver&quot;</span><span class="s1">:</span>
+<a name="l755"><span class="ln">755  </span></a>            <span class="s3">if </span><span class="s1">event.type == pygame.KEYDOWN:</span>
+<a name="l756"><span class="ln">756  </span></a>                <span class="s3">if </span><span class="s1">event.key == pygame.K_r:</span>
+<a name="l757"><span class="ln">757  </span></a>                    <span class="s1">resetGame()</span>
+<a name="l758"><span class="ln">758  </span></a>                    <span class="s1">gameState = </span><span class="s5">&quot;begin&quot;</span>
+<a name="l759"><span class="ln">759  </span></a>                <span class="s3">elif </span><span class="s1">event.key == pygame.K_ESCAPE:</span>
+<a name="l760"><span class="ln">760  </span></a>                    <span class="s1">pygame.mixer.music.stop()</span>
+<a name="l761"><span class="ln">761  </span></a>                    <span class="s1">pygame.quit()</span>
+<a name="l762"><span class="ln">762  </span></a>                    <span class="s3">try</span><span class="s1">:</span>
+<a name="l763"><span class="ln">763  </span></a>                        <span class="s1">file = open(</span><span class="s5">&quot;scores.txt&quot;</span><span class="s3">, </span><span class="s5">&quot;w&quot;</span><span class="s1">)</span>
+<a name="l764"><span class="ln">764  </span></a>                        <span class="s1">file.write(</span><span class="s5">&quot;&quot;</span><span class="s1">)</span>
+<a name="l765"><span class="ln">765  </span></a>                        <span class="s1">file.close()</span>
+<a name="l766"><span class="ln">766  </span></a>                    <span class="s3">except </span><span class="s1">IOError:</span>
+<a name="l767"><span class="ln">767  </span></a>                        <span class="s3">pass</span>
+<a name="l768"><span class="ln">768  </span></a>                    <span class="s1">sys.exit()</span>
+<a name="l769"><span class="ln">769  </span></a>
+<a name="l770"><span class="ln">770  </span></a>        <span class="s2"># Kael controls</span>
+<a name="l771"><span class="ln">771  </span></a>        <span class="s3">if </span><span class="s1">event.type == pygame.KEYDOWN:</span>
+<a name="l772"><span class="ln">772  </span></a>            <span class="s3">if </span><span class="s1">event.key == pygame.K_RIGHT:</span>
+<a name="l773"><span class="ln">773  </span></a>                <span class="s1">moveRight = </span><span class="s3">True</span>
+<a name="l774"><span class="ln">774  </span></a>            <span class="s3">elif </span><span class="s1">event.key == pygame.K_LEFT:</span>
+<a name="l775"><span class="ln">775  </span></a>                <span class="s1">moveLeft = </span><span class="s3">True</span>
+<a name="l776"><span class="ln">776  </span></a>            <span class="s3">elif </span><span class="s1">event.key == pygame.K_UP:</span>
+<a name="l777"><span class="ln">777  </span></a>                <span class="s1">jump = </span><span class="s3">True</span>
+<a name="l778"><span class="ln">778  </span></a>                <span class="s1">velocityKael = -</span><span class="s4">15</span>
+<a name="l779"><span class="ln">779  </span></a>            <span class="s3">elif </span><span class="s1">event.key == pygame.K_m:</span>
+<a name="l780"><span class="ln">780  </span></a>                <span class="s1">hit = </span><span class="s3">True</span>
+<a name="l781"><span class="ln">781  </span></a>
+<a name="l782"><span class="ln">782  </span></a>        <span class="s3">if </span><span class="s1">event.type == pygame.KEYUP:</span>
+<a name="l783"><span class="ln">783  </span></a>            <span class="s3">if </span><span class="s1">event.key == pygame.K_RIGHT:</span>
+<a name="l784"><span class="ln">784  </span></a>                <span class="s1">moveRight = </span><span class="s3">False</span>
+<a name="l785"><span class="ln">785  </span></a>            <span class="s3">elif </span><span class="s1">event.key == pygame.K_LEFT:</span>
+<a name="l786"><span class="ln">786  </span></a>                <span class="s1">moveLeft = </span><span class="s3">False</span>
+<a name="l787"><span class="ln">787  </span></a>            <span class="s3">elif </span><span class="s1">event.key == pygame.K_m:</span>
+<a name="l788"><span class="ln">788  </span></a>                <span class="s1">hit = </span><span class="s3">False</span>
+<a name="l789"><span class="ln">789  </span></a>
+<a name="l790"><span class="ln">790  </span></a>        <span class="s2"># Luma controls</span>
+<a name="l791"><span class="ln">791  </span></a>        <span class="s3">if </span><span class="s1">event.type == pygame.KEYDOWN:</span>
+<a name="l792"><span class="ln">792  </span></a>            <span class="s3">if </span><span class="s1">event.key == pygame.K_d:</span>
+<a name="l793"><span class="ln">793  </span></a>                <span class="s1">moveRightL = </span><span class="s3">True</span>
+<a name="l794"><span class="ln">794  </span></a>            <span class="s3">elif </span><span class="s1">event.key == pygame.K_a:</span>
+<a name="l795"><span class="ln">795  </span></a>                <span class="s1">moveLeftL = </span><span class="s3">True</span>
+<a name="l796"><span class="ln">796  </span></a>            <span class="s3">elif </span><span class="s1">event.key == pygame.K_w:</span>
+<a name="l797"><span class="ln">797  </span></a>                <span class="s1">jumpL = </span><span class="s3">True</span>
+<a name="l798"><span class="ln">798  </span></a>                <span class="s1">velocityLuma = -</span><span class="s4">15</span>
+<a name="l799"><span class="ln">799  </span></a>
+<a name="l800"><span class="ln">800  </span></a>        <span class="s3">if </span><span class="s1">event.type == pygame.KEYUP:</span>
+<a name="l801"><span class="ln">801  </span></a>            <span class="s3">if </span><span class="s1">event.key == pygame.K_d:</span>
+<a name="l802"><span class="ln">802  </span></a>                <span class="s1">moveRightL = </span><span class="s3">False</span>
+<a name="l803"><span class="ln">803  </span></a>            <span class="s3">elif </span><span class="s1">event.key == pygame.K_a:</span>
+<a name="l804"><span class="ln">804  </span></a>                <span class="s1">moveLeftL = </span><span class="s3">False</span>
+<a name="l805"><span class="ln">805  </span></a>
+<a name="l806"><span class="ln">806  </span></a>    <span class="s3">if </span><span class="s1">gameState == </span><span class="s5">&quot;home&quot;</span><span class="s1">:</span>
+<a name="l807"><span class="ln">807  </span></a>        <span class="s1">displayHomeScreen()</span>
+<a name="l808"><span class="ln">808  </span></a>
+<a name="l809"><span class="ln">809  </span></a>    <span class="s3">elif </span><span class="s1">gameState == </span><span class="s5">&quot;introduction&quot;</span><span class="s1">:</span>
+<a name="l810"><span class="ln">810  </span></a>        <span class="s1">displayInstrucScreen()</span>
+<a name="l811"><span class="ln">811  </span></a>
+<a name="l812"><span class="ln">812  </span></a>    <span class="s3">elif </span><span class="s1">gameState == </span><span class="s5">&quot;begin&quot;</span><span class="s1">:</span>
+<a name="l813"><span class="ln">813  </span></a>        <span class="s2"># Check for game over</span>
+<a name="l814"><span class="ln">814  </span></a>        <span class="s3">if </span><span class="s1">checkGameOver(): </span><span class="s2">#FLAG FUNCTION WITH BOOLEAN VALUE RETURN</span>
+<a name="l815"><span class="ln">815  </span></a>            <span class="s1">gameState = </span><span class="s5">&quot;gameOver&quot;</span>
+<a name="l816"><span class="ln">816  </span></a>            <span class="s3">continue</span>
+<a name="l817"><span class="ln">817  </span></a>
+<a name="l818"><span class="ln">818  </span></a>        <span class="s2"># Draw infinite scrolling background</span>
+<a name="l819"><span class="ln">819  </span></a>        <span class="s1">drawInfiniteBackground()</span>
+<a name="l820"><span class="ln">820  </span></a>
+<a name="l821"><span class="ln">821  </span></a>        <span class="s2"># Draw obstacles</span>
+<a name="l822"><span class="ln">822  </span></a>        <span class="s1">drawObstacles()</span>
+<a name="l823"><span class="ln">823  </span></a>
+<a name="l824"><span class="ln">824  </span></a>        <span class="s2"># Handle collisions</span>
+<a name="l825"><span class="ln">825  </span></a>        <span class="s1">obstacleCollision()</span>
+<a name="l826"><span class="ln">826  </span></a>
+<a name="l827"><span class="ln">827  </span></a>        <span class="s2"># Handle Kael's actions</span>
+<a name="l828"><span class="ln">828  </span></a>        <span class="s3">if </span><span class="s1">jump:</span>
+<a name="l829"><span class="ln">829  </span></a>            <span class="s3">if </span><span class="s1">moveLeft:</span>
+<a name="l830"><span class="ln">830  </span></a>                <span class="s1">jumpLeftKael(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">500</span><span class="s1">)</span>
+<a name="l831"><span class="ln">831  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l832"><span class="ln">832  </span></a>                <span class="s1">jumpRightKael(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">500</span><span class="s1">)</span>
+<a name="l833"><span class="ln">833  </span></a>        <span class="s3">elif </span><span class="s1">hit:</span>
+<a name="l834"><span class="ln">834  </span></a>            <span class="s3">if </span><span class="s1">moveLeft:</span>
+<a name="l835"><span class="ln">835  </span></a>                <span class="s1">hitLeftKael()</span>
+<a name="l836"><span class="ln">836  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l837"><span class="ln">837  </span></a>                <span class="s1">hitRightKael()</span>
+<a name="l838"><span class="ln">838  </span></a>        <span class="s3">elif </span><span class="s1">moveLeft:</span>
+<a name="l839"><span class="ln">839  </span></a>            <span class="s1">moveLeftKael()</span>
+<a name="l840"><span class="ln">840  </span></a>        <span class="s3">elif </span><span class="s1">moveRight:</span>
+<a name="l841"><span class="ln">841  </span></a>            <span class="s1">moveRightKael()</span>
+<a name="l842"><span class="ln">842  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l843"><span class="ln">843  </span></a>            <span class="s1">screen.blit(kaelIdle[</span><span class="s4">0</span><span class="s1">]</span><span class="s3">, </span><span class="s1">(kaelX</span><span class="s3">, </span><span class="s1">kaelY))</span>
+<a name="l844"><span class="ln">844  </span></a>
+<a name="l845"><span class="ln">845  </span></a>        <span class="s2"># Handle Luma's actions</span>
+<a name="l846"><span class="ln">846  </span></a>        <span class="s3">if </span><span class="s1">jumpL:</span>
+<a name="l847"><span class="ln">847  </span></a>            <span class="s3">if </span><span class="s1">moveLeftL:</span>
+<a name="l848"><span class="ln">848  </span></a>                <span class="s1">jumpLeftLuma(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">500</span><span class="s1">)</span>
+<a name="l849"><span class="ln">849  </span></a>            <span class="s3">else</span><span class="s1">:</span>
+<a name="l850"><span class="ln">850  </span></a>                <span class="s1">jumpRightLuma(</span><span class="s4">1</span><span class="s3">, </span><span class="s4">500</span><span class="s1">)</span>
+<a name="l851"><span class="ln">851  </span></a>        <span class="s3">elif </span><span class="s1">moveLeftL:</span>
+<a name="l852"><span class="ln">852  </span></a>            <span class="s1">moveLeftLuma()</span>
+<a name="l853"><span class="ln">853  </span></a>        <span class="s3">elif </span><span class="s1">moveRightL:</span>
+<a name="l854"><span class="ln">854  </span></a>            <span class="s1">moveRightLuma()</span>
+<a name="l855"><span class="ln">855  </span></a>        <span class="s3">else</span><span class="s1">:</span>
+<a name="l856"><span class="ln">856  </span></a>            <span class="s1">screen.blit(lumaIdle[</span><span class="s4">0</span><span class="s1">]</span><span class="s3">, </span><span class="s1">(lumaX</span><span class="s3">, </span><span class="s1">lumaY))</span>
+<a name="l857"><span class="ln">857  </span></a>
+<a name="l858"><span class="ln">858  </span></a>        <span class="s2"># Draw UI elements</span>
+<a name="l859"><span class="ln">859  </span></a>        <span class="s1">drawUI()</span>
+<a name="l860"><span class="ln">860  </span></a>
+<a name="l861"><span class="ln">861  </span></a>    <span class="s3">elif </span><span class="s1">gameState == </span><span class="s5">&quot;gameOver&quot;</span><span class="s1">:</span>
+<a name="l862"><span class="ln">862  </span></a>        <span class="s2"># Keep drawing the last frame, and draw everything for the</span>
+<a name="l863"><span class="ln">863  </span></a>        <span class="s2"># next play (if user wants to play again)</span>
+<a name="l864"><span class="ln">864  </span></a>        <span class="s1">drawInfiniteBackground()</span>
+<a name="l865"><span class="ln">865  </span></a>        <span class="s1">drawObstacles()</span>
+<a name="l866"><span class="ln">866  </span></a>        <span class="s1">screen.blit(kaelIdle[</span><span class="s4">0</span><span class="s1">]</span><span class="s3">, </span><span class="s1">(kaelX</span><span class="s3">, </span><span class="s1">kaelY))</span>
+<a name="l867"><span class="ln">867  </span></a>        <span class="s1">screen.blit(lumaIdle[</span><span class="s4">0</span><span class="s1">]</span><span class="s3">, </span><span class="s1">(lumaX</span><span class="s3">, </span><span class="s1">lumaY))</span>
+<a name="l868"><span class="ln">868  </span></a>
+<a name="l869"><span class="ln">869  </span></a>        <span class="s2"># Draw UI elements</span>
+<a name="l870"><span class="ln">870  </span></a>        <span class="s1">drawUI()</span>
+<a name="l871"><span class="ln">871  </span></a>
+<a name="l872"><span class="ln">872  </span></a>        <span class="s2"># Draw game over screen on top</span>
+<a name="l873"><span class="ln">873  </span></a>        <span class="s1">displayGameOver()</span>
+<a name="l874"><span class="ln">874  </span></a>
+<a name="l875"><span class="ln">875  </span></a>    <span class="s2"># Update display and control frame rate</span>
+<a name="l876"><span class="ln">876  </span></a>    <span class="s1">pygame.display.flip()</span>
+<a name="l877"><span class="ln">877  </span></a>    <span class="s1">clock.tick(</span><span class="s4">30</span><span class="s1">)  </span><span class="s2"># 30 FPS</span></pre>
+</body>
+</html>
